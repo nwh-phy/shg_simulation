@@ -30,12 +30,12 @@ matplotlib.rcParams['lines.linewidth'] = 2
 # 禁用LaTeX，使用普通文本渲染
 use_latex = False  # 直接设置为False，避免LaTeX相关问题
 
-# 创建一个自定义的QDial类，支持双击事件
-class ClickableDial(QDial):
+# 创建一个自定义的QSlider类，支持双击事件
+class ClickableSlider(QSlider):
     doubleClicked = pyqtSignal()
     
     def __init__(self, parent=None):
-        super().__init__(parent)
+        super().__init__(Qt.Horizontal, parent)  # 默认为水平滑块
         self.installEventFilter(self)
         
     def eventFilter(self, obj, event):
@@ -215,7 +215,7 @@ class MainWindow(QMainWindow):
             print(f"清除分量滑块时出错: {e}")
         
     def create_component_sliders(self, components):
-        """为每个分量创建旋钮控件"""
+        """为每个分量创建滑块控件"""
         try:
             # 如果组件太多，使用网格布局
             if len(components) > 6:
@@ -223,7 +223,7 @@ class MainWindow(QMainWindow):
                 self.component_layout.addLayout(grid_layout)
                 
                 row, col = 0, 0
-                max_cols = 2  # 每行最多2个旋钮
+                max_cols = 2  # 每行最多2个滑块
                 
                 for comp in components:
                     widget = QWidget()
@@ -234,37 +234,38 @@ class MainWindow(QMainWindow):
                     label.setAlignment(Qt.AlignCenter)  # 居中对齐
                     layout.addWidget(label)
                     
-                    # 水平布局包含旋钮和数值
-                    dial_layout = QHBoxLayout()
+                    # 水平布局包含滑块和数值
+                    slider_layout = QHBoxLayout()
                     
-                    # 使用自定义QDial替代标准QDial，提供旋钮式控制
-                    dial = ClickableDial()
-                    dial.setMinimum(0)
-                    dial.setMaximum(200)  # 0.0到2.0，精度为0.01
-                    dial.setValue(100)    # 默认值1.0
-                    dial.setNotchesVisible(True)
-                    dial.setWrapping(False)
-                    dial.setFixedSize(80, 80)  # 设置固定大小
-                    dial.setProperty("component", comp)
-                    dial.valueChanged.connect(self.update_component_value_dial)
+                    # 使用自定义QSlider，提供滑块控制
+                    slider = ClickableSlider()
+                    slider.setMinimum(0)
+                    slider.setMaximum(500)  # 0.0到5.0，精度为0.01
+                    slider.setValue(100)    # 默认值1.0
+                    slider.setTickPosition(QSlider.TicksBelow)  # 在滑块下方显示刻度
+                    slider.setTickInterval(50)  # 每隔0.5显示一个刻度
+                    slider.setMinimumWidth(150)  # 设置最小宽度
+                    slider.setProperty("component", comp)
+                    slider.valueChanged.connect(self.update_component_value_slider)
                     
                     # 使用闭包传递参数
                     def create_reset_handler(component=comp):
                         return lambda: self.reset_component(component)
                     
-                    dial.doubleClicked.connect(create_reset_handler())
+                    slider.doubleClicked.connect(create_reset_handler())
                     
                     # 添加数值显示标签
                     value_label = QLabel("1.00")
                     value_label.setAlignment(Qt.AlignCenter)  # 居中对齐
+                    value_label.setMinimumWidth(50)  # 确保标签有足够的宽度显示
                     
-                    dial_layout.addWidget(dial)
-                    dial_layout.addWidget(value_label)
+                    slider_layout.addWidget(slider)
+                    slider_layout.addWidget(value_label)
                     
-                    layout.addLayout(dial_layout)
+                    layout.addLayout(slider_layout)
                     
                     self.component_widgets[comp] = {
-                        'dial': dial,
+                        'slider': slider,
                         'label': value_label
                     }
                     
@@ -282,35 +283,36 @@ class MainWindow(QMainWindow):
                     layout = QHBoxLayout(widget)
                     
                     label = QLabel(f"χ{comp}:")
+                    label.setMinimumWidth(40)  # 设置标签最小宽度
                     layout.addWidget(label)
                     
-                    # 使用自定义QDial替代标准QDial，提供旋钮式控制
-                    dial = ClickableDial()
-                    dial.setMinimum(0)
-                    dial.setMaximum(200)  # 0.0到2.0，精度为0.01
-                    dial.setValue(100)    # 默认值1.0
-                    dial.setNotchesVisible(True)
-                    dial.setWrapping(False)
-                    dial.setFixedSize(60, 60)  # 设置固定大小
-                    dial.setProperty("component", comp)
-                    dial.valueChanged.connect(self.update_component_value_dial)
+                    # 使用自定义QSlider，提供滑块控制
+                    slider = ClickableSlider()
+                    slider.setMinimum(0)
+                    slider.setMaximum(500)  # 0.0到5.0，精度为0.01
+                    slider.setValue(100)    # 默认值1.0
+                    slider.setTickPosition(QSlider.TicksBelow)  # 在滑块下方显示刻度
+                    slider.setTickInterval(50)  # 每隔0.5显示一个刻度
+                    slider.setMinimumWidth(180)  # 设置最小宽度
+                    slider.setProperty("component", comp)
+                    slider.valueChanged.connect(self.update_component_value_slider)
                     
                     # 使用闭包传递参数
                     def create_reset_handler(component=comp):
                         return lambda: self.reset_component(component)
                     
-                    dial.doubleClicked.connect(create_reset_handler())
+                    slider.doubleClicked.connect(create_reset_handler())
                     
                     # 添加数值显示标签
                     value_label = QLabel("1.00")
-                    value_label.setMinimumWidth(40)  # 设置最小宽度
+                    value_label.setMinimumWidth(50)  # 设置最小宽度
                     value_label.setAlignment(Qt.AlignCenter)  # 居中对齐
                     
-                    layout.addWidget(dial)
+                    layout.addWidget(slider)
                     layout.addWidget(value_label)
                     
                     self.component_widgets[comp] = {
-                        'dial': dial,
+                        'slider': slider,
                         'label': value_label
                     }
                     
@@ -318,8 +320,8 @@ class MainWindow(QMainWindow):
         except Exception as e:
             print(f"创建分量滑块时出错: {e}")
             
-    def update_component_value_dial(self):
-        """更新单个分量值（从旋钮）"""
+    def update_component_value_slider(self):
+        """更新单个分量值（从滑块）"""
         try:
             sender = self.sender()
             if not sender:
@@ -331,7 +333,7 @@ class MainWindow(QMainWindow):
                 
             raw_value = sender.value()
             
-            # 将0-200的值转换为0.0-2.0
+            # 将0-500的值转换为0.0-5.0
             value = raw_value / 100.0
             
             # 安全检查：确保组件存在于字典中
@@ -380,8 +382,8 @@ class MainWindow(QMainWindow):
             
             # 重置所有分量旋钮
             for comp, widgets in self.component_widgets.items():
-                if 'dial' in widgets:
-                    widgets['dial'].setValue(100)
+                if 'slider' in widgets:
+                    widgets['slider'].setValue(100)
                 if 'label' in widgets:
                     widgets['label'].setText("1.00")
                 self.component_values[comp] = 1.0
@@ -399,8 +401,8 @@ class MainWindow(QMainWindow):
     def reset_component(self, component):
         """重置单个分量的值为1.0"""
         try:
-            if component in self.component_widgets and 'dial' in self.component_widgets[component]:
-                self.component_widgets[component]['dial'].setValue(100)
+            if component in self.component_widgets and 'slider' in self.component_widgets[component]:
+                self.component_widgets[component]['slider'].setValue(100)
                 if 'label' in self.component_widgets[component]:
                     self.component_widgets[component]['label'].setText("1.00")
                 self.component_values[component] = 1.0
