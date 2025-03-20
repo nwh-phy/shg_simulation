@@ -123,6 +123,15 @@ class MainWindow(QMainWindow):
         self.tensor_display = QLabel("1.0")
         self.params_layout.addWidget(self.tensor_display, 1, 2)
         
+        # 检测偏振选择
+        self.detection_label = QLabel("检测偏振:")
+        self.params_layout.addWidget(self.detection_label, 2, 0)
+        
+        self.detection_combo = QComboBox()
+        self.detection_combo.addItems(["总强度 |P|²", "平行模式 (∥)", "垂直模式 (⊥)"])
+        self.detection_combo.currentIndexChanged.connect(self.plot)
+        self.params_layout.addWidget(self.detection_combo, 2, 1, 1, 2)
+        
         self.controls_layout.addWidget(self.params_box)
         
         # 分量单独调整区域
@@ -239,12 +248,12 @@ class MainWindow(QMainWindow):
                     
                     # 使用自定义QSlider，提供滑块控制
                     slider = ClickableSlider()
-                    slider.setMinimum(0)
-                    slider.setMaximum(500)  # 0.0到5.0，精度为0.01
-                    slider.setValue(100)    # 默认值1.0
+                    slider.setMinimum(-1000)        # -10.0
+                    slider.setMaximum(1000)         # 10.0，精度为0.01
+                    slider.setValue(100)            # 默认值1.0
                     slider.setTickPosition(QSlider.TicksBelow)  # 在滑块下方显示刻度
-                    slider.setTickInterval(50)  # 每隔0.5显示一个刻度
-                    slider.setMinimumWidth(150)  # 设置最小宽度
+                    slider.setTickInterval(200)     # 每隔2.0显示一个刻度
+                    slider.setMinimumWidth(150)     # 设置最小宽度
                     slider.setProperty("component", comp)
                     slider.valueChanged.connect(self.update_component_value_slider)
                     
@@ -288,12 +297,12 @@ class MainWindow(QMainWindow):
                     
                     # 使用自定义QSlider，提供滑块控制
                     slider = ClickableSlider()
-                    slider.setMinimum(0)
-                    slider.setMaximum(500)  # 0.0到5.0，精度为0.01
-                    slider.setValue(100)    # 默认值1.0
+                    slider.setMinimum(-1000)        # -10.0
+                    slider.setMaximum(1000)         # 10.0，精度为0.01
+                    slider.setValue(100)            # 默认值1.0
                     slider.setTickPosition(QSlider.TicksBelow)  # 在滑块下方显示刻度
-                    slider.setTickInterval(50)  # 每隔0.5显示一个刻度
-                    slider.setMinimumWidth(180)  # 设置最小宽度
+                    slider.setTickInterval(200)     # 每隔2.0显示一个刻度
+                    slider.setMinimumWidth(180)     # 设置最小宽度
                     slider.setProperty("component", comp)
                     slider.valueChanged.connect(self.update_component_value_slider)
                     
@@ -333,7 +342,7 @@ class MainWindow(QMainWindow):
                 
             raw_value = sender.value()
             
-            # 将0-500的值转换为0.0-5.0
+            # 将-1000到1000的值转换为-10.0到10.0
             value = raw_value / 100.0
             
             # 安全检查：确保组件存在于字典中
@@ -402,7 +411,7 @@ class MainWindow(QMainWindow):
         """重置单个分量的值为1.0"""
         try:
             if component in self.component_widgets and 'slider' in self.component_widgets[component]:
-                self.component_widgets[component]['slider'].setValue(100)
+                self.component_widgets[component]['slider'].setValue(100)  # 对应1.0
                 if 'label' in self.component_widgets[component]:
                     self.component_widgets[component]['label'].setText("1.00")
                 self.component_values[component] = 1.0
@@ -443,12 +452,52 @@ class MainWindow(QMainWindow):
             # 计算极化强度
             P = []
             for theta in theta_range:
+                # 计算入射电场（球坐标系）
                 E = (np.sin(theta)*np.cos(phi_rad),
                      np.sin(theta)*np.sin(phi_rad),
                      np.cos(theta))
+                
                 # 张量缩并计算 P_i = χ_ijk E_j E_k 
                 P_i = np.einsum('ijk,j,k->i', tensor, E, E)
-                P.append(np.linalg.norm(P_i))
+                
+                # 获取检测偏振选择
+                detection_pol = self.detection_combo.currentIndex()
+                
+                if detection_pol == 0:  # 总强度 |P|²
+                    intensity = np.linalg.norm(P_i)**2
+                else:
+                    # 平行和垂直模式检偏 - 只考虑xy平面
+                    # 获取E在xy平面的投影
+                    E_xy = np.array([E[0], E[1], 0.0])
+                    E_xy_norm = np.linalg.norm(E_xy)
+                    
+                    # 如果E_xy几乎为零向量（电场几乎垂直于xy平面），使用单位x向量作为参考
+                    if E_xy_norm < 1e-10:
+                        E_xy_direction = np.array([1.0, 0.0, 0.0])
+                    else:
+                        # 归一化得到xy平面内的方向向量
+                        E_xy_direction = E_xy / E_xy_norm
+                    
+                    # 计算P在xy平面内的分量
+                    P_xy = np.array([P_i[0], P_i[1], 0.0])
+                    
+                    if detection_pol == 1:  # 平行模式 (∥) - xy平面内平行于E_xy的分量
+                        # 计算P在E_xy方向的投影
+                        P_parallel_xy = np.dot(P_xy, E_xy_direction)
+                        intensity = P_parallel_xy**2
+                    elif detection_pol == 2:  # 垂直模式 (⊥) - xy平面内垂直于E_xy的分量
+                        # 在xy平面内，与E_xy垂直的单位向量
+                        if E_xy_norm < 1e-10:
+                            E_perp_direction = np.array([0.0, 1.0, 0.0])  # 如果E在z方向，选y作为垂直方向
+                        else:
+                            # 在xy平面内，逆时针旋转90度
+                            E_perp_direction = np.array([-E_xy_direction[1], E_xy_direction[0], 0.0])
+                        
+                        # 计算P在垂直方向的投影
+                        P_perp_xy = np.dot(P_xy, E_perp_direction)
+                        intensity = P_perp_xy**2
+                
+                P.append(intensity)
             
             # 绘制极图
             self.canvas.axes.plot(theta_range, P, lw=2, color='purple')
@@ -462,7 +511,11 @@ class MainWindow(QMainWindow):
             display_name = display_name.replace("ᵤ", "u").replace("ₐ", "a").replace("ᵢ", "i")
             display_name = display_name.replace("̄", "")  # 移除上划线符号
             
-            title_text = f"{display_name}\n非线性极化强度极图  φ={self.phi:.1f}°"
+            # 获取检测偏振的文本描述
+            detection_text = self.detection_combo.currentText()
+            
+            # 更新标题，包含检测偏振信息
+            title_text = f"{display_name}\n非线性极化强度 - {detection_text}\nφ={self.phi:.1f}°"
                 
             self.canvas.axes.set_title(title_text, pad=20)
             self.canvas.axes.grid(True, linestyle='--', alpha=0.5)
