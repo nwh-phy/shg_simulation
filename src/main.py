@@ -13,6 +13,34 @@ from visualization import plot_polarization_intensity
 from point_groups import (point_group_components, create_tensor_with_relations, 
                         get_all_point_groups, get_components_for_group, str_to_indices)
 
+# 定义常见晶体的预设参数
+# 系数值是相对于点群独立分量的乘数，这里的数值是为了演示，实际应用中应参考精确文献值并考虑单位
+COMMON_CRYSTALS = {
+    "LiNbO3": { # 简化显示名称
+        "point_group": "3m = C₃ᵥ (trigonal)", # 精确匹配JSON中的键名
+        "coeffs": { # 键名应与 get_components_for_group 为 "3m = C₃ᵥ (trigonal)" 返回的独立分量名一致
+            'zzz': -4.7,     # d33 (典型值，相对较大，设为负值仅为示例，符号需查证)
+            'zxx': -0.86,    # d31 (zxx, zyy)
+            'xxz': -0.86,    # d15 (xxz, yyz) - Kleinman d15=d31
+            # 对于 '3m'，独立分量还包括 'yxx' (或 'yyy', 'xxy', 'xyx' 中的一个代表 d22)
+            # 根据 point_groups.py 的 get_components_for_group('3m = C₃ᵥ (trigonal)'),
+            # 独立分量可能包含 'yxx'. LiNbO3 的 d22 是显著的。
+            'yxx': 2.1       # d22 (yxx, 或者 yyy=-yxx, xxy=-yxx, xyx=-yxx - 符号和具体哪个是独立代表要精确)
+                           # 这里假设 'yxx' 是 get_components_for_group 返回的独立分量名之一
+        }
+    },
+    "KDP": { # 简化显示名称
+        "point_group": "4̄2m = D₂ₘ (tetragonal)", # 精确匹配JSON中的键名
+        "coeffs": { # 键名应与 get_components_for_group 为 "4̄2m = D₂ₘ (tetragonal)" 返回的独立分量名一致
+            # 独立分量包括 xyz, xzy, zxy (根据关系 xyz=yxz, xzy=yzx, zxy=zyx)
+            'xyz': 0.39,     # d14 (xyz, yxz)
+            'zxy': 0.42      # d36 (zxy, zyx)
+            # 'xzy' (d25/d15 type) 在KDP中通常为0或很小，如果 point_groups.py 将其列为独立分量，则这里不写会自动置0
+        }
+    },
+    # 更多晶体可以后续添加
+}
+
 # --- 欧拉角旋转辅助函数 ---
 def get_rotation_matrix(phi_c, theta_c, psi_c):
     """ 计算ZYZ欧拉角对应的旋转矩阵 (将晶体坐标系矢量转换为实验室坐标系矢量) """
@@ -75,7 +103,8 @@ def is_latex_available():
 # 配置matplotlib支持中文显示
 # 请确保以下列表中的至少一种字体在您的系统上可用
 # 微软雅黑 (Microsoft YaHei), 黑体 (SimHei), 宋体 (SimSun), 或 Arial
-matplotlib.rcParams['font.sans-serif'] = ['Microsoft YaHei', 'SimHei', 'SimSun', 'Arial', 'sans-serif']
+# 更新为更适合 macOS 的字体列表，同时保留 Windows 常用字体作为后备
+matplotlib.rcParams['font.sans-serif'] = ['PingFang SC', 'Heiti SC', 'STHeiti', 'Microsoft YaHei', 'SimHei', 'SimSun', 'Arial', 'sans-serif']
 matplotlib.rcParams['axes.unicode_minus'] = False  # 正确显示负号
 matplotlib.rcParams['font.size'] = 14
 matplotlib.rcParams['lines.linewidth'] = 2
@@ -125,7 +154,7 @@ class ManualInputWindow(QMainWindow):
         self.tensor_box.setLayout(self.tensor_layout)
         
         # 说明标签
-        self.instruction_label = QLabel("请输入3x6矩阵的d<sub>ij</sub>分量，或选择预设晶体")
+        self.instruction_label = QLabel("请输入3x6矩阵的dij分量，或选择预设晶体")
         self.tensor_layout.addWidget(self.instruction_label)
         
         # 预设晶体选择
@@ -156,7 +185,7 @@ class ManualInputWindow(QMainWindow):
         # 添加行标签和输入框
         for i in range(3):
             # 行标签
-            row_label = QLabel(f"d<sub>{i+1}j</sub>")
+            row_label = QLabel(f"d{i+1}j")
             row_label.setAlignment(Qt.AlignRight | Qt.AlignVCenter)
             self.grid_layout.addWidget(row_label, i+1, 0)
             
@@ -537,6 +566,20 @@ class MainWindow(QMainWindow):
         
         self.controls_layout.addWidget(self.group_box)
         
+        # 常见晶体预设
+        self.common_crystal_box = QGroupBox("常见晶体预设")
+        self.common_crystal_layout = QVBoxLayout()
+        self.common_crystal_box.setLayout(self.common_crystal_layout)
+
+        self.common_crystal_label = QLabel("选择预设晶体:")
+        self.common_crystal_layout.addWidget(self.common_crystal_label)
+
+        self.common_crystal_combo = QComboBox()
+        self.common_crystal_combo.addItems(["自定义"] + list(COMMON_CRYSTALS.keys()))
+        self.common_crystal_combo.currentIndexChanged.connect(self.load_common_crystal)
+        self.common_crystal_layout.addWidget(self.common_crystal_combo)
+        self.controls_layout.addWidget(self.common_crystal_box)
+        
         # 参数调整区
         self.params_box = QGroupBox("参数调整")
         self.params_layout = QGridLayout()
@@ -546,7 +589,11 @@ class MainWindow(QMainWindow):
         self.scan_mode_label = QLabel("扫描模式:")
         self.params_layout.addWidget(self.scan_mode_label, 0, 0)
         self.scan_mode_combo = QComboBox()
-        self.scan_mode_combo.addItems(["默认扫描 (θ-极图)", "偏振角扫描 (α vs I)", "偏振角扫描 (α-强度极图)"])
+        self.scan_mode_combo.addItems(["入射角扫描 (θ-极图)", 
+                                       "偏振角扫描 (α vs I)", 
+                                       "偏振角扫描 (α-强度极图)",
+                                       "3D θinc-αinc 扫描"])
+        self.scan_mode_combo.setCurrentIndex(2) # 保持默认 "偏振角扫描 (α-强度极图)"
         self.scan_mode_combo.currentIndexChanged.connect(self.update_scan_mode_controls)
         self.params_layout.addWidget(self.scan_mode_combo, 0, 1, 1, 2)
 
@@ -560,73 +607,83 @@ class MainWindow(QMainWindow):
         self.fixed_theta_spinbox.valueChanged.connect(self.plot) # 值改变时重绘
         self.params_layout.addWidget(self.fixed_theta_spinbox, 1, 1, 1, 2)
 
+        # 固定光束方位角输入 (仅在偏振角扫描模式下可见/可用)
+        self.alpha_scan_phi_inc_label = QLabel("固定光束方位角 φ<sub>inc</sub> (度):")
+        self.params_layout.addWidget(self.alpha_scan_phi_inc_label, 2, 0)
+        self.alpha_scan_phi_inc_spinbox = QDoubleSpinBox()
+        self.alpha_scan_phi_inc_spinbox.setRange(0, 359)
+        self.alpha_scan_phi_inc_spinbox.setValue(0.0)
+        self.alpha_scan_phi_inc_spinbox.setSuffix("°")
+        self.alpha_scan_phi_inc_spinbox.valueChanged.connect(self.plot)
+        self.params_layout.addWidget(self.alpha_scan_phi_inc_spinbox, 2, 1, 1, 2)
+
         # 晶体朝向欧拉角控制
-        self.euler_phi_label = QLabel("晶体 φ<sub>c</sub> (Z旋转, 度):")
-        self.params_layout.addWidget(self.euler_phi_label, 2, 0)
+        self.euler_phi_label = QLabel("晶体 φc (Z旋转, 度):")
+        self.params_layout.addWidget(self.euler_phi_label, 3, 0) # 行号调整
         self.euler_phi_spinbox = QDoubleSpinBox()
         self.euler_phi_spinbox.setRange(0, 360)
         self.euler_phi_spinbox.setValue(0.0)
         self.euler_phi_spinbox.setSuffix("°")
         self.euler_phi_spinbox.valueChanged.connect(self.plot)
-        self.params_layout.addWidget(self.euler_phi_spinbox, 2, 1, 1, 2)
+        self.params_layout.addWidget(self.euler_phi_spinbox, 3, 1, 1, 2) # 行号调整
 
-        self.euler_theta_label = QLabel("晶体 θ<sub>c</sub> (Y'旋转, 度):")
-        self.params_layout.addWidget(self.euler_theta_label, 3, 0)
+        self.euler_theta_label = QLabel("晶体 θc (Y'旋转, 度):")
+        self.params_layout.addWidget(self.euler_theta_label, 4, 0) # 行号调整
         self.euler_theta_spinbox = QDoubleSpinBox()
         self.euler_theta_spinbox.setRange(0, 180) # 通常0-180度足够
         self.euler_theta_spinbox.setValue(0.0)
         self.euler_theta_spinbox.setSuffix("°")
         self.euler_theta_spinbox.valueChanged.connect(self.plot)
-        self.params_layout.addWidget(self.euler_theta_spinbox, 3, 1, 1, 2)
+        self.params_layout.addWidget(self.euler_theta_spinbox, 4, 1, 1, 2) # 行号调整
 
-        self.euler_psi_label = QLabel("晶体 ψ<sub>c</sub> (Z''旋转, 度):")
-        self.params_layout.addWidget(self.euler_psi_label, 4, 0)
+        self.euler_psi_label = QLabel("晶体 ψc (Z''旋转, 度):")
+        self.params_layout.addWidget(self.euler_psi_label, 5, 0) # 行号调整
         self.euler_psi_spinbox = QDoubleSpinBox()
         self.euler_psi_spinbox.setRange(0, 360)
         self.euler_psi_spinbox.setValue(0.0)
         self.euler_psi_spinbox.setSuffix("°")
         self.euler_psi_spinbox.valueChanged.connect(self.plot)
-        self.params_layout.addWidget(self.euler_psi_spinbox, 4, 1, 1, 2)
+        self.params_layout.addWidget(self.euler_psi_spinbox, 5, 1, 1, 2) # 行号调整
         
-        # 方位角控制
+        # 方位角控制 (用于 θ-极图扫描)
         self.phi_label = QLabel("光束方位角 φ (度):")
-        self.phi_label.setToolTip("入射光传播方向在 XY 平面内的投影与 X 轴正方向的夹角 (0° 到 359°)。\n这定义了入射光传播方向的方位。")
-        self.params_layout.addWidget(self.phi_label, 5, 0) # 行号调整
+        self.phi_label.setToolTip("入射光传播方向在 XY 平面内的投影与 X 轴正方向的夹角 (0° 到 359°)。\n这定义了入射光传播方向的方位 (仅用于入射角扫描模式)。")
+        self.params_layout.addWidget(self.phi_label, 6, 0) # 行号调整
         
         self.phi_slider = QSlider(Qt.Horizontal)
         self.phi_slider.setMinimum(0)
         self.phi_slider.setMaximum(359)
         self.phi_slider.setValue(0)
         self.phi_slider.valueChanged.connect(self.update_phi_display)
-        self.params_layout.addWidget(self.phi_slider, 5, 1) # 行号调整
+        self.params_layout.addWidget(self.phi_slider, 6, 1) # 行号调整
         
         self.phi_display = QLabel("0°")
-        self.params_layout.addWidget(self.phi_display, 5, 2) # 行号调整
+        self.params_layout.addWidget(self.phi_display, 6, 2) # 行号调整
         
         # 张量分量强度调整
         self.tensor_label = QLabel("张量整体强度:") # 标签修改
-        self.params_layout.addWidget(self.tensor_label, 6, 0) # 行号调整
+        self.params_layout.addWidget(self.tensor_label, 7, 0) # 行号调整
         
         self.tensor_slider = QSlider(Qt.Horizontal)
         self.tensor_slider.setMinimum(1)
         self.tensor_slider.setMaximum(20)
         self.tensor_slider.setValue(10)
         self.tensor_slider.valueChanged.connect(self.update_tensor_display)
-        self.params_layout.addWidget(self.tensor_slider, 6, 1) # 行号调整
+        self.params_layout.addWidget(self.tensor_slider, 7, 1) # 行号调整
         
         self.tensor_display = QLabel("1.0")
-        self.params_layout.addWidget(self.tensor_display, 6, 2) # 行号调整
+        self.params_layout.addWidget(self.tensor_display, 7, 2) # 行号调整
         
-        # 输入光偏振模式选择
+        # 输入光偏振模式选择 (用于 θ-极图扫描)
         self.input_polarization_label = QLabel("输入光偏振:")
-        self.params_layout.addWidget(self.input_polarization_label, 7, 0) # 行号调整
+        self.params_layout.addWidget(self.input_polarization_label, 8, 0) # 行号调整
 
         self.input_polarization_combo = QComboBox()
         self.input_polarization_combo.addItems(["默认 (θ-偏振)", "线偏振", "左旋圆偏振 (LCP)", "右旋圆偏振 (RCP)"])
         self.input_polarization_combo.currentIndexChanged.connect(self.update_input_polarization_controls)
-        self.params_layout.addWidget(self.input_polarization_combo, 7, 1, 1, 2) # 行号调整
+        self.params_layout.addWidget(self.input_polarization_combo, 8, 1, 1, 2) # 行号调整
 
-        # 线偏振角度 alpha 控制 (初始隐藏) - 用一个 QWidget 包裹
+        # 线偏振角度 alpha 控制 (用于 θ-极图扫描, 初始隐藏)
         self.alpha_control_widget = QWidget()
         self.alpha_control_layout = QHBoxLayout(self.alpha_control_widget)
         self.alpha_control_layout.setContentsMargins(0,0,0,0)
@@ -640,17 +697,17 @@ class MainWindow(QMainWindow):
         self.alpha_control_layout.addWidget(self.alpha_slider)
         self.alpha_display = QLabel("0°")
         self.alpha_control_layout.addWidget(self.alpha_display)
-        self.params_layout.addWidget(self.alpha_control_widget, 8, 0, 1, 3) # 行号调整
+        self.params_layout.addWidget(self.alpha_control_widget, 9, 0, 1, 3) # 行号调整
         self.alpha_control_widget.setVisible(False) 
         
         # 检测偏振选择
         self.detection_label = QLabel("检测偏振:")
-        self.params_layout.addWidget(self.detection_label, 9, 0) # 行号调整
+        self.params_layout.addWidget(self.detection_label, 10, 0) # 行号调整
         
         self.detection_combo = QComboBox()
         self.detection_combo.addItems(["总强度 |P|²", "平行模式 (∥)", "垂直模式 (⊥)"])
         self.detection_combo.currentIndexChanged.connect(self.plot)
-        self.params_layout.addWidget(self.detection_combo, 9, 1, 1, 2) # 行号调整
+        self.params_layout.addWidget(self.detection_combo, 10, 1, 1, 2) # 行号调整
         
         self.controls_layout.addWidget(self.params_box)
         
@@ -706,7 +763,52 @@ class MainWindow(QMainWindow):
         QApplication.processEvents()
         self.plot()
         
-    def update_point_group(self, index):
+    def _calculate_lab_frame_d_matrix(self):
+        """
+        Helper function to calculate the d_matrix in the lab frame, Voigt notation.
+        Returns the 3x6 d_matrix (complex or float).
+        """
+        if not hasattr(self, 'base_tensor') or self.base_tensor is None:
+            return None
+
+        # 应用分量独立系数
+        tensor_crystal_scaled = self.base_tensor.copy()
+        for comp, value in self.component_values.items():
+            try:
+                indices = str_to_indices(comp)
+                tensor_crystal_scaled[indices] = tensor_crystal_scaled[indices] * value
+            except Exception as e:
+                print(f"处理分量 {comp} 时出错: {e}")
+        
+        # 应用全局系数
+        global_scale = self.tensor_slider.value() / 10.0
+        tensor_crystal_scaled = tensor_crystal_scaled * global_scale
+
+        # 获取欧拉角并计算旋转矩阵
+        phi_c = self.euler_phi_spinbox.value()
+        theta_c = self.euler_theta_spinbox.value()
+        psi_c = self.euler_psi_spinbox.value()
+        
+        if not (phi_c == 0 and theta_c == 0 and psi_c == 0):
+            R_mat = get_rotation_matrix(phi_c, theta_c, psi_c) # Renamed R to R_mat to avoid conflict
+            tensor_lab_frame = rotate_tensor(tensor_crystal_scaled, R_mat)
+        else:
+            tensor_lab_frame = tensor_crystal_scaled
+
+        # 将3x3x3张量 (d_ijk) 转换为3x6 d_matrix (d_il for E_voigt with 2E_yE_z terms)
+        # d_i1=d_ixx, d_i2=d_iyy, d_i3=d_izz, d_i4=d_iyz, d_i5=d_ixz, d_i6=d_ixy
+        d_matrix = np.zeros((3, 6), dtype=np.complex128 if np.iscomplexobj(tensor_lab_frame) else np.float64)
+        
+        d_matrix[:, 0] = tensor_lab_frame[:, 0, 0]  # d_ixx
+        d_matrix[:, 1] = tensor_lab_frame[:, 1, 1]  # d_iyy
+        d_matrix[:, 2] = tensor_lab_frame[:, 2, 2]  # d_izz
+        d_matrix[:, 3] = tensor_lab_frame[:, 1, 2]  # d_iyz (assumes T[i,1,2] = T[i,2,1] if Kleinman)
+        d_matrix[:, 4] = tensor_lab_frame[:, 0, 2]  # d_ixz (assumes T[i,0,2] = T[i,2,0] if Kleinman)
+        d_matrix[:, 5] = tensor_lab_frame[:, 0, 1]  # d_ixy (assumes T[i,0,1] = T[i,1,0] if Kleinman)
+        
+        return d_matrix
+
+    def update_point_group(self, index, called_by_common_crystal_load=False):
         try:
             if self.group_combo.count() == 0:
                 return
@@ -727,9 +829,9 @@ class MainWindow(QMainWindow):
                 }
                 l = voigt_map.get((j, k), 0)
                 if l > 0:
-                    comp_str.append(f"d<sub>{i+1}{l}</sub>")
+                    comp_str.append(f"d{i+1}{l}")
                 else:
-                    comp_str.append(f"d<sub>{i+1}{j+1}{k+1}</sub>")
+                    comp_str.append(f"d{i+1}{j+1}{k+1}")
             
             self.components_list.setText(", ".join(comp_str))
             
@@ -740,6 +842,14 @@ class MainWindow(QMainWindow):
             # 重建分量滑块
             self.clear_component_sliders()
             self.create_component_sliders(components)
+            
+            # 如果不是由 load_common_crystal 调用的，则可能是用户直接更改了点群
+            # 这种情况下，将常见晶体选择重置为"自定义"
+            if not called_by_common_crystal_load:
+                if self.common_crystal_combo.currentText() != "自定义":
+                    self.common_crystal_combo.blockSignals(True)
+                    self.common_crystal_combo.setCurrentIndex(0) # 0 是 "自定义"
+                    self.common_crystal_combo.blockSignals(False)
             
             # 更新后自动绘图
             self.plot()
@@ -797,9 +907,9 @@ class MainWindow(QMainWindow):
                     }
                     l = voigt_map.get((j, k), 0)
                     if l > 0:
-                        label = QLabel(f"d<sub>{i+1}{l}</sub>:")
+                        label = QLabel(f"d{i+1}{l}:")
                     else:
-                        label = QLabel(f"d<sub>{i+1}{j+1}{k+1}</sub>:")
+                        label = QLabel(f"d{i+1}{j+1}{k+1}:")
                         
                     label.setAlignment(Qt.AlignCenter)  # 居中对齐
                     layout.addWidget(label)
@@ -995,50 +1105,9 @@ class MainWindow(QMainWindow):
         current_scan_mode = self.scan_mode_combo.currentText()
 
         try:
-            # 应用分量独立系数
-            tensor_crystal_scaled = self.base_tensor.copy()
-            for comp, value in self.component_values.items():
-                try:
-                    indices = str_to_indices(comp)
-                    tensor_crystal_scaled[indices] = tensor_crystal_scaled[indices] * value
-                except Exception as e:
-                    print(f"处理分量 {comp} 时出错: {e}")
-            
-            # 应用全局系数
-            global_scale = self.tensor_slider.value() / 10.0
-            tensor_crystal_scaled = tensor_crystal_scaled * global_scale
-
-            # 获取欧拉角并计算旋转矩阵
-            phi_c = self.euler_phi_spinbox.value()
-            theta_c = self.euler_theta_spinbox.value()
-            psi_c = self.euler_psi_spinbox.value()
-            
-            # 只有当欧拉角不都为零时才进行旋转，以避免不必要的计算
-            # 并确保张量在旋转前是实数或复数，以保持类型一致性
-            # self.base_tensor 应该是实数张量，所以 tensor_crystal_scaled 也是
-            if not (phi_c == 0 and theta_c == 0 and psi_c == 0):
-                R = get_rotation_matrix(phi_c, theta_c, psi_c)
-                tensor_lab_frame = rotate_tensor(tensor_crystal_scaled, R)
-            else:
-                tensor_lab_frame = tensor_crystal_scaled # 无旋转，直接使用
-            
-            # 将3x3x3张量 (此时已在实验室坐标系) 转换为3x6矩阵（Voigt表示法）
-            d_matrix = np.zeros((3, 6), dtype=np.complex128 if np.iscomplexobj(tensor_lab_frame) else np.float64)
-            # 转换规则：jk -> l：11->1, 22->2, 33->3, 23/32->4, 13/31->5, 12/21->6
-            voigt_map = {
-                (0, 0): 0, (1, 1): 1, (2, 2): 2,
-                (1, 2): 3, (2, 1): 3, (0, 2): 4, 
-                (2, 0): 4, (0, 1): 5, (1, 0): 5
-            }
-            
-            # 填充d矩阵
-            for i in range(3):
-                for j in range(3):
-                    for k in range(3):
-                        if (j, k) in voigt_map:
-                            l_idx = voigt_map[(j, k)] # renamed l to l_idx
-                            # d_matrix[i, l_idx] += tensor[i, j_idx, k_idx]
-                            d_matrix[i, l_idx] += tensor_lab_frame[i, j, k] # 使用旋转后的张量
+            d_matrix = self._calculate_lab_frame_d_matrix()
+            if d_matrix is None:
+                return # Not initialized yet
             
             # 清除当前图形
             self.canvas.axes.clear()
@@ -1049,7 +1118,7 @@ class MainWindow(QMainWindow):
                 self.canvas.axes = self.axes # 更新引用
 
                 fixed_theta_rad = np.deg2rad(self.fixed_theta_spinbox.value())
-                phi_rad_fixed = np.deg2rad(self.phi_slider.value()) # phi from slider
+                phi_rad_fixed = np.deg2rad(self.alpha_scan_phi_inc_spinbox.value()) # 使用新的phi_inc控件
                 alpha_scan_rad = np.linspace(0, 2 * np.pi, 360)
                 intensities_vs_alpha = []
 
@@ -1077,6 +1146,19 @@ class MainWindow(QMainWindow):
                     Ex, Ey, Ez = E_omega[0], E_omega[1], E_omega[2]
                     E_voigt = np.array([Ex*Ex, Ey*Ey, Ez*Ez, 2*Ey*Ez, 2*Ex*Ez, 2*Ex*Ey], dtype=np.complex128)
                     P_i = np.dot(d_matrix, E_voigt)
+
+                    if np.isclose(alpha_val_rad, 0.0): # Print only for the first alpha value
+                        print(f"--- Debug Info for Cartesian Alpha Scan (alpha near 0) ---")
+                        print(f"Selected Group: {self.selected_group}, Euler(pc,tc,yc): {self.euler_phi_spinbox.value()},{self.euler_theta_spinbox.value()},{self.euler_psi_spinbox.value()}")
+                        print(f"Fixed theta_inc: {self.fixed_theta_spinbox.value()} deg, Fixed phi_inc: {self.alpha_scan_phi_inc_spinbox.value()} deg")
+                        print(f"d_matrix[0,:]: {d_matrix[0,:]}") # Px = d_1j * E_j
+                        print(f"d_matrix[1,:]: {d_matrix[1,:]}") # Py = d_2j * E_j
+                        # print(f"d_matrix[2,:]: {d_matrix[2,:]}") # Pz = d_3j * E_j
+                        print(f"E_omega (inc): {E_omega}")
+                        print(f"E_voigt (inc): {E_voigt}")
+                        print(f"P_i (SHG Px,Py,Pz): {P_i}")
+                        print(f"--------------------------------------------------")
+
                     current_intensity = 0.0
                     detection_pol = self.detection_combo.currentIndex()
                     if detection_pol == 0: current_intensity = np.linalg.norm(P_i)**2
@@ -1107,7 +1189,7 @@ class MainWindow(QMainWindow):
                     self.canvas.axes = self.axes
                 
                 fixed_theta_rad = np.deg2rad(self.fixed_theta_spinbox.value())
-                phi_rad_fixed = np.deg2rad(self.phi_slider.value()) 
+                phi_rad_fixed = np.deg2rad(self.alpha_scan_phi_inc_spinbox.value()) # 使用新的phi_inc控件
                 alpha_scan_rad = np.linspace(0, 2 * np.pi, 360) # 角度用弧度
                 intensities_vs_alpha = []
 
@@ -1230,15 +1312,17 @@ class MainWindow(QMainWindow):
         phi_c = self.euler_phi_spinbox.value()
         theta_c = self.euler_theta_spinbox.value()
         psi_c = self.euler_psi_spinbox.value()
-        crystal_orientation_text = f"晶体朝向: φ<sub>c</sub>={phi_c:.1f}°, θ<sub>c</sub>={theta_c:.1f}°, ψ<sub>c</sub>={psi_c:.1f}°"
+        crystal_orientation_text = f"晶体朝向: φc={phi_c:.1f}°, θc={theta_c:.1f}°, ψc={psi_c:.1f}°"
 
         if scan_mode == "偏振角扫描 (α vs I)":
             fixed_theta_val = self.fixed_theta_spinbox.value()
-            title_text = f"{display_name} - {detection_text}\n偏振角扫描 (笛卡尔) @ 光束θ={fixed_theta_val:.1f}°, 光束φ={self.phi:.1f}°\n{crystal_orientation_text}"
+            fixed_phi_inc_val = self.alpha_scan_phi_inc_spinbox.value()
+            title_text = f"{display_name} - {detection_text}\n偏振角扫描 (笛卡尔) @ 光束θinc={fixed_theta_val:.1f}°, φinc={fixed_phi_inc_val:.1f}°\n{crystal_orientation_text}"
         elif scan_mode == "偏振角扫描 (α-强度极图)":
             fixed_theta_val = self.fixed_theta_spinbox.value()
-            title_text = f"{display_name} - {detection_text}\n偏振角扫描 (极坐标) @ 光束θ={fixed_theta_val:.1f}°, 光束φ={self.phi:.1f}°\n{crystal_orientation_text}"
-        else:  # 默认扫描 (θ-极图)
+            fixed_phi_inc_val = self.alpha_scan_phi_inc_spinbox.value()
+            title_text = f"{display_name} - {detection_text}\n偏振角扫描 (极坐标) @ 光束θinc={fixed_theta_val:.1f}°, φinc={fixed_phi_inc_val:.1f}°\n{crystal_orientation_text}"
+        else:  # 入射角扫描 (θ-极图)
             input_pol_mode = self.input_polarization_combo.currentText()
             input_pol_text = f"输入: {input_pol_mode}"
             if input_pol_mode == "线偏振" or input_pol_mode == "默认 (θ-偏振)": 
@@ -1256,10 +1340,22 @@ class MainWindow(QMainWindow):
         mode = self.scan_mode_combo.currentText()
         is_alpha_scan_mode_cartesian = (mode == "偏振角扫描 (α vs I)")
         is_alpha_scan_mode_polar = (mode == "偏振角扫描 (α-强度极图)")
+        is_theta_alpha_3d_scan_mode = (mode == "3D θinc-αinc 扫描")
+
         is_any_alpha_scan_mode = is_alpha_scan_mode_cartesian or is_alpha_scan_mode_polar
 
-        self.fixed_theta_label.setVisible(is_any_alpha_scan_mode)
-        self.fixed_theta_spinbox.setVisible(is_any_alpha_scan_mode)
+        # 固定入射天顶角 (theta_inc) - 用于常规2D alpha扫描
+        self.fixed_theta_label.setVisible(is_any_alpha_scan_mode and not is_theta_alpha_3d_scan_mode)
+        self.fixed_theta_spinbox.setVisible(is_any_alpha_scan_mode and not is_theta_alpha_3d_scan_mode)
+        
+        # 固定入射方位角 (phi_inc) - 用于所有alpha扫描 (2D和新的3D)
+        self.alpha_scan_phi_inc_label.setVisible(is_any_alpha_scan_mode or is_theta_alpha_3d_scan_mode)
+        self.alpha_scan_phi_inc_spinbox.setVisible(is_any_alpha_scan_mode or is_theta_alpha_3d_scan_mode)
+
+        # 全局的phi_slider (用于theta扫描)
+        self.phi_label.setVisible(not is_any_alpha_scan_mode)
+        self.phi_slider.setVisible(not is_any_alpha_scan_mode)
+        self.phi_display.setVisible(not is_any_alpha_scan_mode)
 
         self.input_polarization_label.setVisible(not is_any_alpha_scan_mode)
         self.input_polarization_combo.setVisible(not is_any_alpha_scan_mode)
@@ -1297,14 +1393,145 @@ class MainWindow(QMainWindow):
 
     def open_3d_plot_window(self):
         """打开3D SHG图案绘制窗口"""
-        # 传递必要的参数给3D绘图窗口，例如计算好的d_matrix和E_omega
-        # 这里暂时只打开一个空窗口，后续再填充数据和绘图逻辑
+        if not hasattr(self, 'base_tensor') or self.base_tensor is None:
+            print("基础张量未初始化，无法绘制3D图形。")
+            return
+
+        current_scan_mode_for_3d = self.scan_mode_combo.currentText()
+
+        if current_scan_mode_for_3d == "3D θinc-αinc 扫描":
+            self._plot_3d_theta_alpha_scan()
+        else:
+            # 默认行为：绘制 SHG 出射方向图 (基于当前主窗口的固定入射光参数)
+            self._plot_3d_shg_radiation_pattern()
+
+    def _plot_3d_shg_radiation_pattern(self):
+        """Helper function to compute and plot 3D SHG radiation pattern."""
+        d_matrix = self._calculate_lab_frame_d_matrix()
+        if d_matrix is None:
+            print("无法计算d_matrix，无法绘制3D图形。")
+            return
+
+        # --- 确定固定的入射电场 E_omega ---
+        # 使用 fixed_theta_spinbox (如果可见) 或默认值作为入射天顶角 theta_inc
+        # 使用 alpha_scan_phi_inc_spinbox (如果可见) 或 phi_slider (如果可见) 或默认值作为入射方位角 phi_inc
+        
+        # For radiation pattern, incident direction comes from 2D alpha scan settings if active, else theta scan settings
+        if self.fixed_theta_spinbox.isVisible(): # Alpha scan active
+            theta_inc_rad = np.deg2rad(self.fixed_theta_spinbox.value())
+            phi_inc_rad = np.deg2rad(self.alpha_scan_phi_inc_spinbox.value())
+            current_input_pol_mode = "线偏振" # Alpha scan implies linear polarization for E_omega base vectors
+            alpha_inc_rad = np.deg2rad(0) # For fixed E_omega, we can just use alpha=0 as reference for vec_theta, vec_phi definition
+                                          # The actual E_omega for radiation is not scanned over alpha.
+                                          # We should use the *selected* polarization mode from the UI for theta_scan mode if that's active.
+        elif self.input_polarization_combo.isVisible(): # Theta scan active
+            # This case needs more thought for what E_omega to use for 3D radiation pattern
+            # Let's use the current settings from the UI for theta_scan mode
+            theta_inc_rad = np.deg2rad(self.fixed_theta_spinbox.value()) # Defaulting to fixed_theta if others are not set up
+            phi_inc_rad = np.deg2rad(self.phi_slider.value()) 
+            current_input_pol_mode = self.input_polarization_combo.currentText()
+            alpha_inc_rad = np.deg2rad(self.alpha_slider.value())
+        else: # Fallback, though UI logic should prevent this
+            theta_inc_rad = np.deg2rad(0)
+            phi_inc_rad = np.deg2rad(0)
+            current_input_pol_mode = "默认 (θ-偏振)"
+            alpha_inc_rad = np.deg2rad(0)
+
+        vec_theta_inc = np.array([
+            np.cos(theta_inc_rad) * np.cos(phi_inc_rad),
+            np.cos(theta_inc_rad) * np.sin(phi_inc_rad),
+            -np.sin(theta_inc_rad)
+        ])
+        vec_phi_inc = np.array([
+            -np.sin(phi_inc_rad),
+            np.cos(phi_inc_rad),
+            0.0
+        ])
+        E_omega = np.zeros(3, dtype=np.complex128)
+        if current_input_pol_mode == "线偏振":
+            E_omega = np.cos(alpha_inc_rad) * vec_theta_inc + np.sin(alpha_inc_rad) * vec_phi_inc
+        elif current_input_pol_mode == "左旋圆偏振 (LCP)":
+            E_omega = (1/np.sqrt(2)) * (vec_theta_inc + 1j * vec_phi_inc)
+        elif current_input_pol_mode == "右旋圆偏振 (RCP)":
+            E_omega = (1/np.sqrt(2)) * (vec_theta_inc - 1j * vec_phi_inc)
+        else: # "默认 (θ-偏振)"
+            E_omega = vec_theta_inc
+        
+        Ex, Ey, Ez = E_omega[0], E_omega[1], E_omega[2]
+        E_voigt = np.array([
+            Ex*Ex, Ey*Ey, Ez*Ez,
+            2*Ey*Ez, 2*Ez*Ex, 2*Ex*Ey
+        ], dtype=np.complex128)
+        P_induced_2w = np.dot(d_matrix, E_voigt)
+
+        theta_out_scan = np.linspace(0, np.pi, 91)
+        phi_out_scan = np.linspace(0, 2 * np.pi, 181)
+        theta_out_grid, phi_out_grid = np.meshgrid(theta_out_scan, phi_out_scan)
+        R_shg_grid = np.zeros_like(theta_out_grid, dtype=float)
+        for i, th_o in enumerate(theta_out_scan):
+            for j, ph_o in enumerate(phi_out_scan):
+                k_shg_hat = np.array([np.sin(th_o)*np.cos(ph_o), np.sin(th_o)*np.sin(ph_o), np.cos(th_o)])
+                P_dot_k_shg = np.dot(P_induced_2w, k_shg_hat)
+                P_effective_rad = P_induced_2w - P_dot_k_shg * k_shg_hat
+                intensity_at_angle = np.linalg.norm(P_effective_rad)**2
+                R_shg_grid[j, i] = intensity_at_angle
+
         if not hasattr(self, 'shg_3d_plot_window_instance') or not self.shg_3d_plot_window_instance.isVisible():
             self.shg_3d_plot_window_instance = SHG3DPlotWindow(self)
-            self.shg_3d_plot_window_instance.show()
-        else:
-            self.shg_3d_plot_window_instance.activateWindow()
-            self.shg_3d_plot_window_instance.raise_()
+        self.shg_3d_plot_window_instance.plot_data(R_shg_grid, theta_out_grid, phi_out_grid, plot_type="radiation_pattern")
+        self.shg_3d_plot_window_instance.show()
+        self.shg_3d_plot_window_instance.activateWindow()
+        self.shg_3d_plot_window_instance.raise_()
+
+    def _plot_3d_theta_alpha_scan(self):
+        """Computes and plots 3D SHG intensity vs (theta_inc, alpha_inc)."""
+        print("Starting 3D Theta-Alpha Scan...")
+        d_matrix = self._calculate_lab_frame_d_matrix()
+        if d_matrix is None: return
+
+        phi_inc_fixed_rad = np.deg2rad(self.alpha_scan_phi_inc_spinbox.value())
+        detection_mode_idx = self.detection_combo.currentIndex()
+        print(f"Inside _plot_3d_theta_alpha_scan: detection_mode_idx = {detection_mode_idx} (0=Total, 1=Para, 2=Perp), Selected text: {self.detection_combo.currentText()}")
+
+        theta_inc_scan = np.linspace(0, np.pi, 91)  # 0-180 degrees, e.g., 91 points for 2-degree steps
+        alpha_inc_scan = np.linspace(0, 2 * np.pi, 73) # 0-360 degrees
+        theta_inc_grid, alpha_inc_grid = np.meshgrid(theta_inc_scan, alpha_inc_scan)
+        intensity_grid = np.zeros_like(theta_inc_grid)
+
+        for i_th, th_i in enumerate(theta_inc_scan):
+            vec_theta_inc_basis = np.array([np.cos(th_i) * np.cos(phi_inc_fixed_rad), 
+                                            np.cos(th_i) * np.sin(phi_inc_fixed_rad), 
+                                            -np.sin(th_i)])
+            vec_phi_inc_basis = np.array([-np.sin(phi_inc_fixed_rad), np.cos(phi_inc_fixed_rad), 0.0])
+            for i_al, al_i in enumerate(alpha_inc_scan):
+                E_omega = np.cos(al_i) * vec_theta_inc_basis + np.sin(al_i) * vec_phi_inc_basis
+                Ex, Ey, Ez = E_omega[0], E_omega[1], E_omega[2]
+                E_voigt = np.array([Ex*Ex, Ey*Ey, Ez*Ez, 2*Ey*Ez, 2*Ex*Ez, 2*Ex*Ey], dtype=np.complex128)
+                P_i = np.dot(d_matrix, E_voigt)
+                
+                current_intensity = 0.0
+                if detection_mode_idx == 0:  # Total intensity
+                    current_intensity = np.linalg.norm(P_i)**2
+                else: # Parallel/Perpendicular
+                    E_omega_xy_projection = np.array([Ex, Ey, 0.0])
+                    E_omega_xy_norm = np.linalg.norm(E_omega_xy_projection)
+                    E_par_dir_xy = np.array([1.0,0.0,0.0]) if E_omega_xy_norm < 1e-9 else E_omega_xy_projection / E_omega_xy_norm
+                    P_xy_complex = np.array([P_i[0], P_i[1], 0.0])
+                    if detection_mode_idx == 1: # Parallel
+                        P_par_comp = np.dot(P_xy_complex, E_par_dir_xy)
+                        current_intensity = np.abs(P_par_comp)**2
+                    elif detection_mode_idx == 2: # Perpendicular
+                        E_perp_dir_xy = np.array([-E_par_dir_xy[1], E_par_dir_xy[0], 0.0])
+                        P_perp_comp = np.dot(P_xy_complex, E_perp_dir_xy)
+                        current_intensity = np.abs(P_perp_comp)**2
+                intensity_grid[i_al, i_th] = current_intensity # alpha varies along rows (dim0), theta along columns (dim1)
+
+        if not hasattr(self, 'shg_3d_plot_window_instance') or not self.shg_3d_plot_window_instance.isVisible():
+            self.shg_3d_plot_window_instance = SHG3DPlotWindow(self)
+        self.shg_3d_plot_window_instance.plot_data(intensity_grid, theta_inc_grid, alpha_inc_grid, plot_type="theta_alpha_scan")
+        self.shg_3d_plot_window_instance.show()
+        self.shg_3d_plot_window_instance.activateWindow()
+        self.shg_3d_plot_window_instance.raise_()
 
     def open_manual_input(self):
         """打开手动输入窗口"""
@@ -1318,6 +1545,76 @@ class MainWindow(QMainWindow):
             self.manual_window_instance.raise_() # 确保在最前
             self.hide()
 
+    def load_common_crystal(self):
+        selected_crystal_name = self.common_crystal_combo.currentText()
+        if selected_crystal_name == "自定义":
+            # 用户选择自定义时，可以考虑重置点群到某个默认或保持当前状态
+            # 也可以允许用户在自定义后，再修改点群和各分量
+            # 为保持简单，此处不执行特定操作，依赖后续的点群选择或手动调整
+            # 或者，可以触发一次参数重置到点群的基础状态
+            # self.reset_params() # 确保所有组件回到基于点群的1.0或默认值
+            return
+
+        if selected_crystal_name in COMMON_CRYSTALS:
+            crystal_data = COMMON_CRYSTALS[selected_crystal_name]
+            point_group_name = crystal_data["point_group"]
+            coeffs = crystal_data["coeffs"]
+
+            # 1. 设置点群
+            # 找到点群在 group_combo 中的索引
+            try:
+                idx = self.group_combo.findText(point_group_name)
+                if idx != -1:
+                    # 暂时断开 group_combo 的信号，避免 load_common_crystal 重入或冲突
+                    # 或者确保 update_point_group 不会错误地重置我们即将设置的值
+                    self.group_combo.blockSignals(True)
+                    self.group_combo.setCurrentIndex(idx)
+                    self.group_combo.blockSignals(False)
+                    # 手动调用 update_point_group 以确保状态一致，因为它现在不会被信号触发
+                    self.update_point_group(idx, called_by_common_crystal_load=True)
+
+                else:
+                    print(f"错误：在点群列表中未找到预设晶体的点群 {point_group_name}")
+                    return
+            except Exception as e:
+                print(f"设置点群时出错: {e}")
+                return
+
+            # 2. 设置各独立分量的值
+            # update_point_group 会将所有 self.component_values 初始化为 1.0
+            # 我们需要在此之后根据预设的 coeffs 更新它们
+            
+            # 获取当前点群的所有独立分量名称 (例如 'zzz', 'zxx', etc.)
+            # 这应该在 update_point_group 被调用后，self.selected_group 更新后进行
+            current_independent_components = get_components_for_group(self.selected_group)
+
+            for comp_name in current_independent_components:
+                # 从预设中获取该分量的值，如果未指定，则默认为 0.0
+                # 这确保了点群允许但晶体不具有的分量被设为0
+                value = coeffs.get(comp_name, 0.0)
+                self.component_values[comp_name] = value
+                
+                if comp_name in self.component_widgets:
+                    slider = self.component_widgets[comp_name]['slider']
+                    label = self.component_widgets[comp_name]['label']
+                    
+                    # 更新滑块: slider值为-1000到1000，对应-10.0到10.0
+                    # 需要将 value 转换为滑块的整数值
+                    slider_val = int(round(value * 100))
+                    # 确保滑块值在范围内
+                    slider_val = max(slider.minimum(), min(slider.maximum(), slider_val))
+                    
+                    slider.setValue(slider_val)
+                    label.setText(f"{value:.2f}")
+            
+            # 3. 重置欧拉角和整体强度（可选，但推荐）
+            self.euler_phi_spinbox.setValue(0.0)
+            self.euler_theta_spinbox.setValue(0.0)
+            self.euler_psi_spinbox.setValue(0.0)
+            self.tensor_slider.setValue(10) # 重置为默认强度 1.0
+
+            self.plot() # 更新绘图
+
 class SHG3DPlotWindow(QMainWindow): # 使用QMainWindow以便可以有菜单等，或者QDialog也可以
     def __init__(self, parent=None):
         super().__init__(parent)
@@ -1330,43 +1627,47 @@ class SHG3DPlotWindow(QMainWindow): # 使用QMainWindow以便可以有菜单等�
 
         self.canvas = FigureCanvas(Figure(figsize=(7, 6), dpi=100))
         layout.addWidget(self.canvas)
-        
-        # 添加3D坐标轴
-        # self.ax = self.canvas.figure.add_subplot(111, projection='3d')
-        # 延迟初始化3D轴到实际绘图时，避免无数据时创建
+        self.ax = None
 
-        # TODO: Add controls or display info if needed
-
-    def plot_data(self, R_shg, theta_out_grid, phi_out_grid):
+    def plot_data(self, R_data, angle1_grid, angle2_grid, plot_type="radiation_pattern"):
         """
         绘制3D SHG数据。
-        R_shg: SHG强度，作为半径，是一个二维数组，维度对应theta_out_grid和phi_out_grid
-        theta_out_grid: 出射天顶角网格 (radians)
-        phi_out_grid: 出射方位角网格 (radians)
+        plot_type: "radiation_pattern" (R_data=SHG_intensity, angle1=theta_out, angle2=phi_out)
+                   "theta_alpha_scan" (R_data=SHG_intensity, angle1=theta_inc, angle2=alpha_inc)
         """
         if not hasattr(self, 'ax') or self.ax is None or not isinstance(self.ax, Axes3D):
-            self.canvas.figure.clear() # 清除旧的（可能是2D的）轴
+            self.canvas.figure.clear()
             self.ax = self.canvas.figure.add_subplot(111, projection='3d')
         else:
-            self.ax.clear() # 清除之前的3D图形
+            self.ax.clear()
 
-        # 将球面半径转换为笛卡尔坐标
-        X = R_shg * np.sin(theta_out_grid) * np.cos(phi_out_grid)
-        Y = R_shg * np.sin(theta_out_grid) * np.sin(phi_out_grid)
-        Z = R_shg * np.cos(theta_out_grid)
+        if plot_type == "radiation_pattern":
+            # angle1_grid is theta_out_grid, angle2_grid is phi_out_grid
+            X = R_data * np.sin(angle1_grid) * np.cos(angle2_grid) 
+            Y = R_data * np.sin(angle1_grid) * np.sin(angle2_grid)
+            Z = R_data * np.cos(angle1_grid)
+            self.ax.set_xlabel('X_lab (SHG propagation)')
+            self.ax.set_ylabel('Y_lab (SHG propagation)')
+            self.ax.set_zlabel('Z_lab (SHG propagation)')
+            self.ax.set_title('3D SHG Radiation Pattern')
+        elif plot_type == "theta_alpha_scan":
+            # angle1_grid is theta_inc_grid, angle2_grid is alpha_inc_grid
+            # We map (theta_inc, alpha_inc) to spherical coordinates for visualization
+            # Let theta_inc be the polar angle (from Z), and alpha_inc be the azimuthal angle.
+            X = R_data * np.sin(angle1_grid) * np.cos(angle2_grid) 
+            Y = R_data * np.sin(angle1_grid) * np.sin(angle2_grid)
+            Z = R_data * np.cos(angle1_grid)
+            self.ax.set_xlabel('I * sin(θ_inc)cos(α_inc)')
+            self.ax.set_ylabel('I * sin(θ_inc)sin(α_inc)')
+            self.ax.set_zlabel('I * cos(θ_inc)')
+            self.ax.set_title('3D SHG Intensity (θ_inc, α_inc) Scan')
+        else:
+            print(f"Unknown plot_type for 3D plot: {plot_type}")
+            return
 
-        # 绘制表面
         self.ax.plot_surface(X, Y, Z, cmap='viridis', edgecolor='k', rstride=1, cstride=1, alpha=0.8)
-
-        self.ax.set_xlabel('X_lab')
-        self.ax.set_ylabel('Y_lab')
-        self.ax.set_zlabel('Z_lab')
-        self.ax.set_title('3D SHG Intensity Pattern')
         
-        # 设置一个固定的合理的视角
-        self.ax.view_init(elev=20., azim=45)
-        # 调整 límites para asegurar que el origen (0,0,0) sea visible y la forma sea completa
-        max_R = np.max(R_shg) if R_shg.size > 0 else 1.0
+        max_R = np.max(R_data) if R_data.size > 0 else 1.0
         self.ax.set_xlim([-max_R, max_R])
         self.ax.set_ylim([-max_R, max_R])
         self.ax.set_zlim([-max_R, max_R])
