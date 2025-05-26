@@ -1,6 +1,7 @@
 import json
 import numpy as np
 import os
+import sys # 添加 sys 模块
 
 # 从 JSON 文件加载点群数据
 def load_point_group_data(filename):
@@ -12,15 +13,44 @@ def load_point_group_data(filename):
         # 返回一个空字典作为备用
         return {}
 
-# 尝试加载点群数据，如果失败则使用相对路径
-try:
-    absolute_path = 'c:/Users/HP/Desktop/NJUNWH/NJUNWH/大三下/实验数据/shg_simulation/shg_simulation/data/point_group_data.json'
-    if os.path.exists(absolute_path):
-        point_group_components = load_point_group_data(absolute_path)
+def get_data_file_path(filename):
+    """ Get absolute path to data file, works for dev and for PyInstaller """
+    if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+        # Running in a PyInstaller bundle
+        # The 'data' directory should be at the root of the bundle (sys._MEIPASS)
+        return os.path.join(sys._MEIPASS, 'data', filename)
     else:
-        # 尝试使用相对路径
-        relative_path = os.path.join(os.path.dirname(__file__), '..', 'data', 'point_group_data.json')
-        point_group_components = load_point_group_data(relative_path)
+        # Running in a normal Python environment
+        # Assumes point_groups.py is in 'src' and 'data' is in project_root ('../data')
+        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # project root
+        return os.path.join(base_dir, 'data', filename)
+
+# 尝试加载点群数据
+try:
+    data_file_actual_path = get_data_file_path('point_group_data.json')
+    if not os.path.exists(data_file_actual_path):
+        # Fallback for older structure or direct execution within src without data at ../data
+        # This path assumes 'data' is a sibling of 'src', and this script is in 'src'
+        # ProjectRoot/
+        #  |- src/point_groups.py
+        #  |- data/point_group_data.json
+        # This fallback might be useful if the primary get_data_file_path logic for dev is too strict.
+        # However, the get_data_file_path should ideally be robust.
+        # For PyInstaller, sys._MEIPASS + 'data/file' is standard if --add-data "data:data" is used.
+        # For dev, os.path.join(os.path.dirname(__file__), '..', 'data', filename) from point_groups.py is correct.
+        # The get_data_file_path has been updated to use os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+        # which should give the project root in dev.
+        print(f"Warning: Data file not found at primary path: {data_file_actual_path}")
+        # Trying alternative relative path for dev (../data from script location)
+        alternative_dev_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'point_group_data.json')
+        if os.path.exists(alternative_dev_path):
+            data_file_actual_path = alternative_dev_path
+            print(f"Found data file at alternative dev path: {data_file_actual_path}")
+        else:
+            print(f"Error: Data file 'point_group_data.json' not found at expected locations.")
+            raise FileNotFoundError("point_group_data.json not found")
+            
+    point_group_components = load_point_group_data(data_file_actual_path)
 except Exception as e:
     print(f"初始化点群数据时出错: {e}")
     point_group_components = {}

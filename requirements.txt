@@ -1,5 +1,5 @@
-numpy
-matplotlib
-PyQt5
+PyQt5>=5.15,<6.0
+numpy>=1.20,<2.0
+matplotlib>=3.4,<4.0
 scipy
 ipywidgets
