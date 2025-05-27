@@ -23,6 +23,7 @@ SHGSimulator 是一个用 Python 和 PyQt5 开发的图形用户界面应用程�
 *   **实时可视化**：使用 Matplotlib 动态绘制SHG强度图样。
 *   **手动张量输入模式**：允许用户直接输入 3x6 的 dij 张量矩阵。
 *   **3D SHG 图样显示**：可根据当前参数绘制3D的SHG辐射方向图或 (θinc, αinc) 强度扫描图。
+*   **符号计算与解析表达式**：针对垂直入射情况，可计算选定点群的二次谐波强度关于入射光偏振角 (alpha) 的解析表达式 (P<sub>x</sub>, P<sub>y</sub>, P<sub>z</sub>, I<sub>total</sub>, I<sub>parallel</sub>, I<sub>perpendicular</sub>)。支持以 SymPy 字符串、LaTeX 源码和 Mathematica 代码格式显示 3x6 Voigt 形式的 d 张量和相关表达式。
 *   **内置Logo**：界面中包含IPE课题组Logo。
 *   **可打包为EXE**：使用 PyInstaller 将程序打包为单文件可执行程序，方便在Windows上分发和运行。
 
@@ -32,11 +33,12 @@ SHGSimulator 是一个用 Python 和 PyQt5 开发的图形用户界面应用程�
 *   PyQt5
 *   NumPy
 *   Matplotlib
+*   SymPy (用于符号计算)
 *   PyInstaller (用于打包)
 
 **安装依赖 (示例使用 pip):**
 ```bash
-pip install PyQt5 numpy matplotlib
+pip install PyQt5 numpy matplotlib sympy
 ```
 
 ## 如何运行
@@ -81,6 +83,7 @@ shg_simulation/
 ├── src/
 │   ├── main.py               # 主程序和GUI逻辑
 │   ├── point_groups.py       # 点群数据和张量处理
+│   ├── symbolic_calculator.py # 符号计算SHG表达式逻辑
 │   ├── visualization.py      # (目前可能部分功能已整合到main.py)
 │   └── point_group_data.json # 点群对称性数据 (在data文件夹内)
 ├── data/
@@ -99,6 +102,7 @@ shg_simulation/
 *   **PyQt5**: 用于构建图形用户界面。
 *   **NumPy**: 用于高效的数值计算和张量操作。
 *   **Matplotlib**: 用于数据可视化和绘图。
+*   **SymPy**: 用于符号计算，生成解析表达式。
 
 ## 未来可能的改进
 
@@ -107,6 +111,7 @@ shg_simulation/
 *   **多层膜结构**: 支持多层薄膜样品中的SHG模拟。
 *   **聚焦光束**: 模拟高斯光束等聚焦光束下的SHG。
 *   **输出数据导出**: 允许用户将计算结果或图表数据导出为文本或图像文件。
+*   **符号表达式增强**: 进一步增强符号表达式的显示，例如支持直接渲染LaTeX数学公式到GUI，或提供更多导出格式。
 *   **更高级的3D可视化**: 使用更专业的3D可视化库（如 Mayavi, VisPy）以获得更好的性能和交互性。
 *   **单位和物理常数**: 明确物理量的单位，并在计算中引入相关物理常数。
 
