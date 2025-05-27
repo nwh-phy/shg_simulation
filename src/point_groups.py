@@ -22,32 +22,33 @@ def get_data_file_path(filename):
     else:
         # Running in a normal Python environment
         # Assumes point_groups.py is in 'src' and 'data' is in project_root ('../data')
-        base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__))) # project root
-        return os.path.join(base_dir, 'data', filename)
+        project_root = os.path.abspath(os.path.join(os.path.dirname(__file__), '..'))
+        return os.path.join(project_root, 'data', filename)
 
 # 尝试加载点群数据
 try:
     data_file_actual_path = get_data_file_path('point_group_data.json')
     if not os.path.exists(data_file_actual_path):
-        # Fallback for older structure or direct execution within src without data at ../data
-        # This path assumes 'data' is a sibling of 'src', and this script is in 'src'
-        # ProjectRoot/
-        #  |- src/point_groups.py
-        #  |- data/point_group_data.json
-        # This fallback might be useful if the primary get_data_file_path logic for dev is too strict.
-        # However, the get_data_file_path should ideally be robust.
-        # For PyInstaller, sys._MEIPASS + 'data/file' is standard if --add-data "data:data" is used.
-        # For dev, os.path.join(os.path.dirname(__file__), '..', 'data', filename) from point_groups.py is correct.
-        # The get_data_file_path has been updated to use os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-        # which should give the project root in dev.
         print(f"Warning: Data file not found at primary path: {data_file_actual_path}")
-        # Trying alternative relative path for dev (../data from script location)
+        # Fallback for development if the structure is slightly different or running script directly
         alternative_dev_path = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'data', 'point_group_data.json')
         if os.path.exists(alternative_dev_path):
             data_file_actual_path = alternative_dev_path
             print(f"Found data file at alternative dev path: {data_file_actual_path}")
         else:
-            print(f"Error: Data file 'point_group_data.json' not found at expected locations.")
+            # This specific check for bundled path inside the 'if not os.path.exists(data_file_actual_path):'
+            # might be redundant if the first call to get_data_file_path for bundled app already works.
+            # However, it can serve as a safeguard or for more complex scenarios.
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                bundled_path_check = os.path.join(sys._MEIPASS, 'data', 'point_group_data.json')
+                if os.path.exists(bundled_path_check):
+                    data_file_actual_path = bundled_path_check
+                    print(f"Found data file in PyInstaller bundle (fallback check): {data_file_actual_path}")
+                else:
+                    print(f"Critical Error: Data file 'point_group_data.json' not found in bundle at {bundled_path_check} after primary check failed.")
+                    raise FileNotFoundError(f"point_group_data.json not found in bundle at {bundled_path_check}")
+            else:
+                print(f"Critical Error: Data file 'point_group_data.json' not found at expected development locations: {data_file_actual_path} or {alternative_dev_path}")
             raise FileNotFoundError("point_group_data.json not found")
             
     point_group_components = load_point_group_data(data_file_actual_path)

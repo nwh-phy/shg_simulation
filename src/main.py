@@ -1,10 +1,12 @@
 import sys
+import os
 import numpy as np
 import matplotlib
 from PyQt5.QtWidgets import (QApplication, QMainWindow, QVBoxLayout, QHBoxLayout, 
                             QWidget, QLabel, QSlider, QPushButton, QComboBox, 
-                            QGroupBox, QGridLayout, QSpinBox, QDoubleSpinBox, QDial, QScrollArea)
+                            QGroupBox, QGridLayout, QSpinBox, QDoubleSpinBox, QDial, QScrollArea, QSizePolicy, QFileDialog)
 from PyQt5.QtCore import Qt, pyqtSignal, QEvent
+from PyQt5.QtGui import QPixmap, QImage # <-- Ensure QImage is imported
 from matplotlib.backends.backend_qt5agg import FigureCanvasQTAgg as FigureCanvas
 from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D # 导入3D绘图模块
@@ -129,8 +131,62 @@ class ClickableSlider(QSlider):
 class PlotCanvas(FigureCanvas):
     def __init__(self, parent=None, width=5, height=5, dpi=100):
         self.fig = Figure(figsize=(width, height), dpi=dpi)
+        self.fig.set_constrained_layout(True) 
         self.axes = self.fig.add_subplot(111, polar=True)
         super().__init__(self.fig)
+        self.setSizePolicy(QSizePolicy.Expanding, QSizePolicy.Expanding)
+        self.logo_ax_on_fig = None # Renamed for clarity
+
+    def draw_logo_on_figure(self, q_image_logo):
+        if q_image_logo is None or q_image_logo.isNull():
+            print("Logo QImage is null, skipping drawing logo on figure.")
+            return
+
+        if self.logo_ax_on_fig:
+            try:
+                self.logo_ax_on_fig.remove()
+            except Exception as e:
+                print(f"Error removing previous logo_ax_on_fig: {e}")
+            self.logo_ax_on_fig = None
+        
+        try:
+            ptr = q_image_logo.bits()
+            ptr.setsize(q_image_logo.byteCount())
+            if q_image_logo.format() != QImage.Format_RGBA8888 and q_image_logo.format() != QImage.Format_ARGB32:
+                 temp_image = q_image_logo.convertToFormat(QImage.Format_RGBA8888)
+                 if temp_image.isNull():
+                     print("Error: Could not convert QImage to RGBA8888 for logo.")
+                     return
+                 ptr = temp_image.bits()
+                 ptr.setsize(temp_image.byteCount())
+                 logo_numpy_array = np.array(ptr).reshape(temp_image.height(), temp_image.width(), 4)
+            else:
+                 logo_numpy_array = np.array(ptr).reshape(q_image_logo.height(), q_image_logo.width(), 4)
+
+            fig_width_px, fig_height_px = self.fig.get_size_inches() * self.fig.dpi
+            image_aspect_ratio = q_image_logo.width() / q_image_logo.height()
+
+            margin_fig_rel = 0.01  
+            logo_height_fig_rel = 0.08  # <--- MODIFIED: Increased relative height
+            
+            logo_width_px = logo_height_fig_rel * fig_height_px * image_aspect_ratio
+            logo_width_fig_rel = logo_width_px / fig_width_px
+            
+            rect_left_fig = margin_fig_rel
+            rect_bottom_fig = 1.0 - margin_fig_rel - logo_height_fig_rel
+            
+            self.logo_ax_on_fig = self.fig.add_axes(
+                [rect_left_fig, rect_bottom_fig, logo_width_fig_rel, logo_height_fig_rel],
+                anchor='NW', 
+                zorder=20
+            )
+            self.logo_ax_on_fig.imshow(logo_numpy_array)
+            self.logo_ax_on_fig.axis('off')
+
+        except Exception as e:
+            print(f"Error drawing logo on figure: {e}")
+            import traceback
+            traceback.print_exc()
 
 class ManualInputWindow(QMainWindow):
     def __init__(self, parent=None):
@@ -227,6 +283,7 @@ class ManualInputWindow(QMainWindow):
         # 右侧绘图区域
         self.plot_widget = QWidget()
         self.plot_layout = QVBoxLayout(self.plot_widget)
+        self.plot_layout.setContentsMargins(5, 5, 0, 0) # 左, 上, 右, 下边距
         self.main_layout.addWidget(self.plot_widget, 2)
         
         self.canvas = PlotCanvas(self, width=8, height=8)
@@ -528,6 +585,25 @@ class MainWindow(QMainWindow):
         self.setWindowTitle("非线性极化模拟器")
         self.setGeometry(100, 100, 1200, 800)
 
+        self.logo_qimage_for_plot = None
+        try:
+            if getattr(sys, 'frozen', False) and hasattr(sys, '_MEIPASS'):
+                logo_path_main = os.path.join(sys._MEIPASS, 'IPE_logo.png')
+            else:
+                logo_path_main = os.path.join(os.path.dirname(os.path.abspath(__file__)), '..', 'IPE_logo.png')
+            
+            if os.path.exists(logo_path_main):
+                pixmap = QPixmap(logo_path_main)
+                if not pixmap.isNull():
+                    scaled_pixmap = pixmap.scaledToHeight(120, Qt.SmoothTransformation) # <--- MODIFIED SCALED HEIGHT
+                    self.logo_qimage_for_plot = scaled_pixmap.toImage().convertToFormat(QImage.Format_RGBA8888)
+                else:
+                    print("Warning: Failed to load IPE_logo.png into QPixmap.")
+            else:
+                print(f"Warning: IPE_logo.png not found at {logo_path_main}")
+        except Exception as e:
+            print(f"Error preparing logo QImage: {e}")
+
         # 初始化关键属性
         self.phi = 0.0
         self.component_values = {}
@@ -547,7 +623,7 @@ class MainWindow(QMainWindow):
         self.controls_layout = QVBoxLayout(self.controls_widget) # controls_widget使用QVBoxLayout
         self.controls_scroll_area.setWidget(self.controls_widget) # 将controls_widget放入scroll_area
         self.main_layout.addWidget(self.controls_scroll_area, 1) # 将scroll_area添加到主布局
-        
+
         # 点群选择
         self.group_box = QGroupBox("晶体点群选择")
         self.group_layout = QVBoxLayout()
@@ -730,7 +806,6 @@ class MainWindow(QMainWindow):
         self.reset_button.clicked.connect(self.reset_params)
         self.buttons_layout.addWidget(self.reset_button)
         
-        # 添加打开手动输入窗口的按钮
         self.manual_input_button = QPushButton("手动输入模式")
         self.manual_input_button.clicked.connect(self.open_manual_input)
         self.buttons_layout.addWidget(self.manual_input_button)
@@ -738,14 +813,19 @@ class MainWindow(QMainWindow):
         self.plot_3d_button = QPushButton("绘制3D SHG图案")
         self.plot_3d_button.clicked.connect(self.open_3d_plot_window)
         self.buttons_layout.addWidget(self.plot_3d_button)
-        
+
+        self.save_image_button = QPushButton("保存图像")
+        self.save_image_button.clicked.connect(self.save_current_plot_image)
+        self.buttons_layout.addWidget(self.save_image_button)
+
         self.controls_layout.addWidget(self.buttons_widget)
         
         # 右侧绘图区域
         self.plot_widget = QWidget()
         self.plot_layout = QVBoxLayout(self.plot_widget)
+        self.plot_layout.setContentsMargins(5, 5, 0, 0) 
         self.main_layout.addWidget(self.plot_widget, 2)
-        
+
         self.canvas = PlotCanvas(self, width=8, height=8)
         self.plot_layout.addWidget(self.canvas)
         
@@ -1109,8 +1189,13 @@ class MainWindow(QMainWindow):
             if d_matrix is None:
                 return # Not initialized yet
             
-            # 清除当前图形
-            self.canvas.axes.clear()
+            self.canvas.axes.clear() # Clear main axes
+            if self.canvas.logo_ax_on_fig: # Clear old figure-level logo if it exists
+                try:
+                    self.canvas.logo_ax_on_fig.remove()
+                except Exception as e:
+                    print(f"Error removing logo_ax_on_fig in plot: {e}")
+                self.canvas.logo_ax_on_fig = None
 
             if current_scan_mode == "偏振角扫描 (α vs I)":
                 self.canvas.axes.remove() # 移除旧的极坐标轴
@@ -1147,18 +1232,6 @@ class MainWindow(QMainWindow):
                     E_voigt = np.array([Ex*Ex, Ey*Ey, Ez*Ez, 2*Ey*Ez, 2*Ex*Ez, 2*Ex*Ey], dtype=np.complex128)
                     P_i = np.dot(d_matrix, E_voigt)
 
-                    if np.isclose(alpha_val_rad, 0.0): # Print only for the first alpha value
-                        print(f"--- Debug Info for Cartesian Alpha Scan (alpha near 0) ---")
-                        print(f"Selected Group: {self.selected_group}, Euler(pc,tc,yc): {self.euler_phi_spinbox.value()},{self.euler_theta_spinbox.value()},{self.euler_psi_spinbox.value()}")
-                        print(f"Fixed theta_inc: {self.fixed_theta_spinbox.value()} deg, Fixed phi_inc: {self.alpha_scan_phi_inc_spinbox.value()} deg")
-                        print(f"d_matrix[0,:]: {d_matrix[0,:]}") # Px = d_1j * E_j
-                        print(f"d_matrix[1,:]: {d_matrix[1,:]}") # Py = d_2j * E_j
-                        # print(f"d_matrix[2,:]: {d_matrix[2,:]}") # Pz = d_3j * E_j
-                        print(f"E_omega (inc): {E_omega}")
-                        print(f"E_voigt (inc): {E_voigt}")
-                        print(f"P_i (SHG Px,Py,Pz): {P_i}")
-                        print(f"--------------------------------------------------")
-
                     current_intensity = 0.0
                     detection_pol = self.detection_combo.currentIndex()
                     if detection_pol == 0: current_intensity = np.linalg.norm(P_i)**2
@@ -1180,6 +1253,12 @@ class MainWindow(QMainWindow):
                 self.canvas.axes.set_xlabel("偏振角 α (度)")
                 self.canvas.axes.set_ylabel("SHG 强度 (任意单位)")
                 self.canvas.axes.grid(True)
+
+                # Store data for export IMMEDIATELY after calculation for this mode
+                self.current_plot_data_x = alpha_scan_rad
+                self.current_plot_data_y = intensities_vs_alpha
+                self.current_plot_data_type = "alpha_cartesian"
+                self.current_plot_labels = ("Alpha (rad)", "Intensity")
 
             elif current_scan_mode == "偏振角扫描 (α-强度极图)":
                 # 确保是极坐标轴
@@ -1237,6 +1316,12 @@ class MainWindow(QMainWindow):
                 self.canvas.axes.plot(alpha_scan_rad, intensities_vs_alpha, lw=2, color='green')
                 self.canvas.axes.grid(True)
 
+                # Store data for export IMMEDIATELY after calculation for this mode
+                self.current_plot_data_x = alpha_scan_rad # x is angle for polar
+                self.current_plot_data_y = intensities_vs_alpha # y is radius for polar
+                self.current_plot_data_type = "alpha_polar"
+                self.current_plot_labels = ("Alpha (rad)", "Intensity")
+
             else: # "默认扫描 (θ-极图)"
                 # Reconfigure axes for Polar plot if necessary
                 if not isinstance(self.canvas.axes, matplotlib.projections.polar.PolarAxes):
@@ -1288,6 +1373,16 @@ class MainWindow(QMainWindow):
                 self.canvas.axes.plot(theta_scan_rad, P_intensities, lw=2, color='purple')
                 self.canvas.axes.grid(True, linestyle='--', alpha=0.5)
 
+                # Store data for export IMMEDIATELY after calculation for this mode
+                self.current_plot_data_x = theta_scan_rad
+                self.current_plot_data_y = P_intensities
+                self.current_plot_data_type = "theta_polar"
+                self.current_plot_labels = ("Angle (rad)", "Intensity")
+
+            # After all main plotting is done on self.canvas.axes:
+            if self.logo_qimage_for_plot and not self.logo_qimage_for_plot.isNull():
+                self.canvas.draw_logo_on_figure(self.logo_qimage_for_plot) # <--- MODIFIED call
+            
             # Common drawing and title setting
             self.update_plot_title()
             self.canvas.draw()
@@ -1614,6 +1709,95 @@ class MainWindow(QMainWindow):
             self.tensor_slider.setValue(10) # 重置为默认强度 1.0
 
             self.plot() # 更新绘图
+
+    def save_current_plot_image(self):
+        if not hasattr(self.canvas, 'fig') or self.canvas.fig is None:
+            print("没有可保存的图像。")
+            return
+
+        # Dynamically generate a default filename
+        try:
+            point_group = self.selected_group.replace(" ", "_").replace("=", "").replace("(", "").replace(")", "").replace("/ benefitting", "") # Sanitize
+            scan_mode_text = self.scan_mode_combo.currentText()
+            detection_mode = self.detection_combo.currentText().split(" ")[0] # e.g., "总强度"
+
+            filename_parts = ["SHG", point_group, detection_mode]
+
+            if "入射角扫描" in scan_mode_text: # θ-极图
+                filename_parts.append("ThetaScan")
+                phi_val = self.phi_slider.value()
+                filename_parts.append(f"phi{phi_val}")
+                input_pol_mode = self.input_polarization_combo.currentText()
+                if "线偏振" in input_pol_mode:
+                    alpha_val = self.alpha_slider.value()
+                    filename_parts.append(f"alpha{alpha_val}")
+                elif "LCP" in input_pol_mode:
+                    filename_parts.append("LCP")
+                elif "RCP" in input_pol_mode:
+                    filename_parts.append("RCP")
+            elif "偏振角扫描 (α vs I)" in scan_mode_text: # α vs I (Cartesian)
+                filename_parts.append("AlphaScan_vs_I")
+                theta_inc = self.fixed_theta_spinbox.value()
+                phi_inc = self.alpha_scan_phi_inc_spinbox.value()
+                filename_parts.append(f"th{theta_inc:.0f}_ph{phi_inc:.0f}")
+            elif "偏振角扫描 (α-强度极图)" in scan_mode_text: # α-强度极图 (Polar)
+                filename_parts.append("AlphaScan_polar")
+                theta_inc = self.fixed_theta_spinbox.value()
+                phi_inc = self.alpha_scan_phi_inc_spinbox.value()
+                filename_parts.append(f"th{theta_inc:.0f}_ph{phi_inc:.0f}")
+            elif "3D" in scan_mode_text:
+                filename_parts.append("3DScan")
+                # Potentially add more specific 3D params if needed
+                pass
+            
+            # Clean up common problematic characters for filenames from all parts
+            clean_parts = []
+            for part in filename_parts:
+                part_str = str(part)
+                # Remove or replace characters like / \\ : * ? \" < > |\n                part_str = part_str.replace(" ", "_").replace("/", "-").replace("\\", "-")
+                part_str = part_str.replace(":", "-").replace("*", "").replace("?", "").replace("\"", "'").replace("<", "").replace(">", "").replace("|", "")
+                part_str = part_str.replace(" ", "_").replace("(", "").replace(")", "") #二次清理括号
+                part_str = part_str.replace("<sub>", "").replace("</sub>", "") #清理html标签
+                clean_parts.append(part_str)
+
+            default_filename = "_".join(clean_parts) if clean_parts else "SHG_plot"
+        except Exception as e:
+            print(f"Error generating default filename: {e}")
+            default_filename = "SHG_plot"
+
+        # Define supported file types for the dialog
+        file_filters = "PNG图像 (*.png);;JPEG图像 (*.jpg *.jpeg);;PDF文件 (*.pdf);;SVG矢量图 (*.svg);;所有文件 (*)"
+        # Suggest a default filename
+        # default_filename = "SHG_plot" # <--- REMOVE THIS LINE
+        
+        filePath, selected_filter = QFileDialog.getSaveFileName(
+            self,
+            "保存图像",
+            default_filename, # Default directory and filename
+            file_filters
+        )
+
+        if filePath:
+            try:
+                # Determine format from selected_filter or filePath extension if needed,
+                # though savefig often infers from extension.
+                # For robustness, one might parse selected_filter or use a mapping.
+                # For now, relying on savefig's inference or common extensions.
+                
+                # Add a white background for formats like JPG that don't support transparency well by default
+                # and to ensure consistent appearance.
+                original_facecolor = self.canvas.fig.get_facecolor()
+                self.canvas.fig.set_facecolor('white')
+                
+                self.canvas.fig.savefig(filePath, dpi=300, bbox_inches='tight') # Use bbox_inches='tight'
+                
+                self.canvas.fig.set_facecolor(original_facecolor) # Restore original facecolor
+                
+                print(f"图像已保存到: {filePath}")
+            except Exception as e:
+                print(f"保存图像时出错: {e}")
+                # Optionally, show an error message dialog to the user
+                # QMessageBox.critical(self, "错误", f"保存图像失败: {e}")
 
 class SHG3DPlotWindow(QMainWindow): # 使用QMainWindow以便可以有菜单等，或者QDialog也可以
     def __init__(self, parent=None):

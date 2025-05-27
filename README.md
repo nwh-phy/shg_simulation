@@ -1,32 +1,97 @@
-# SHG 极化模拟器
+# SHG 非线性极化模拟器 (SHGSimulator)
 
-本项目是一个基于 Python 和 PyQt5 开发的图形用户界面 (GUI) 应用，用于模拟和可视化材料的二次谐波产生 (SHG) 响应。用户可以根据晶体的点群对称性、自定义非线性光学张量、调整入射光参数（如偏振态、入射角度）以及晶体朝向，来计算和显示SHG强度随不同参数变化的极坐标图、笛卡尔坐标图以及三维强度分布图。
+## 简介
 
-## 主要功能
+SHGSimulator 是一个用 Python 和 PyQt5 开发的图形用户界面应用程序，用于模拟和可视化材料的二次谐波产生 (SHG) 非线性极化效应。用户可以选择不同的晶体点群、调整张量分量、设置入射光参数，并观察产生的SHG强度极图。
 
-*   **晶体点群选择**: 支持32种晶体点群，根据所选点群自动构建基础的非线性极化张量形式。
-*   **常见晶体预设**: 内置常见非线性晶体（如 LiNbO3, KDP）的预设参数，方便快速加载和模拟。
-*   **张量分量自定义**:
-    *   允许用户通过滑块调整点群允许的各独立非线性张量分量 (d<sub>ij</sub> 或 χ<sup>(2)</sup><sub>ijk</sub>) 的相对大小和符号。
-    *   支持对张量进行整体缩放。
-*   **入射光参数控制**:
-    *   **扫描模式**:
-        *   **入射角扫描 (θ-极图)**: 扫描入射光的天顶角 θ (0-360°)，在固定光束方位角 φ 和固定入射光偏振态下，绘制SHG强度作为角度函数的极坐标图。
-        *   **偏振角扫描 (α vs I - 笛卡尔图)**: 在固定入射光方向 (θ<sub>inc</sub>, φ<sub>inc</sub>) 下，扫描入射线偏振光的偏振角度 α (0-360°)，绘制SHG强度作为 α 的笛卡尔坐标图。
-        *   **偏振角扫描 (α-强度极图)**: 与上一模式类似，但将强度作为 α 的函数在极坐标下显示。
-        *   **3D θ<sub>inc</sub>-α<sub>inc</sub> 扫描**: 同时扫描入射光的天顶角 θ<sub>inc</sub> (0-180°) 和线偏振角 α<sub>inc</sub> (0-360°)，在固定的入射光束方位角 φ<sub>inc</sub> 下，将SHG强度显示为三维球面图，其中径向距离代表强度。
-    *   **入射光偏振态**: 对于入射角扫描模式，支持选择默认 (p-偏振近似)、线偏振 (可调偏振角 α)、左旋圆偏振 (LCP) 和右旋圆偏振 (RCP)。
-    *   **固定入射角/方位角**: 在α扫描和3D扫描模式下，用户可以指定固定的入射天顶角 θ<sub>inc</sub> 和光束方位角 φ<sub>inc</sub>。
-*   **晶体朝向控制**: 通过三个欧拉角 (φ<sub>c</sub>, θ<sub>c</sub>, ψ<sub>c</sub> - ZYZ约定) 控制晶体坐标系相对于实验室坐标系的朝向，从而模拟不同切割和取向的晶体。
-*   **SHG信号检测**:
-    *   **总强度**: 计算总的SHG信号强度 |P<sub>2ω</sub>|²。
-    *   **平行模式 (∥)**: 计算SHG信号中平行于入射光在XY平面偏振投影方向的分量的强度。
-    *   **垂直模式 (⊥)**: 计算SHG信号中垂直于入射光在XY平面偏振投影方向的分量的强度。
-*   **可视化**:
-    *   使用 Matplotlib 实时绘制2D极坐标图和笛卡尔坐标图。
-    *   使用 Matplotlib 的 `mpl_toolkits.mplot3d` 绘制3D的SHG强度分布图。
-*   **手动输入模式**: 提供一个独立的窗口，允许用户直接以3x6矩阵形式手动输入Voigt表示的 d<sub>ij</sub> 系数，并进行模拟。
-*   **3D SHG出射方向图 (旧功能)**: 能够基于固定的入射光和晶体参数，计算并显示SHG信号在空间中的辐射方向图（当前3D绘图按钮优先调用新的 θ<sub>inc</sub>-α<sub>inc</sub> 扫描）。
+## 主要特性
+
+*   **图形用户界面**：基于 PyQt5 构建，操作直观。
+*   **点群选择**：支持多种常见晶体点群，自动确定非零张量分量。
+*   **常见晶体预设**：内置LiNbO3, KDP等常见晶体的参数，方便快速加载。
+*   **参数可调**：
+    *   独立调整非零张量分量的相对强度。
+    *   调整晶体欧拉角 (φc, θc, ψc) 以改变晶体朝向。
+    *   选择不同的扫描模式：
+        *   入射角扫描 (θ-极图)
+        *   偏振角扫描 (α vs SHG强度，笛卡尔图)
+        *   偏振角扫描 (α-强度极图)
+        *   3D θinc-αinc 扫描
+    *   对于入射角扫描：可设置光束方位角 (φ) 和入射光偏振态 (默认θ偏振, 线偏振及角度α, 左旋/右旋圆偏振)。
+    *   对于偏振角扫描：可设置固定的入射天顶角 (θinc) 和入射方位角 (φinc)。
+*   **检测偏振分析**：可分析总SHG强度，或平行/垂直于入射光偏振方向的SHG分量。
+*   **实时可视化**：使用 Matplotlib 动态绘制SHG强度图样。
+*   **手动张量输入模式**：允许用户直接输入 3x6 的 dij 张量矩阵。
+*   **3D SHG 图样显示**：可根据当前参数绘制3D的SHG辐射方向图或 (θinc, αinc) 强度扫描图。
+*   **内置Logo**：界面中包含IPE课题组Logo。
+*   **可打包为EXE**：使用 PyInstaller 将程序打包为单文件可执行程序，方便在Windows上分发和运行。
+
+## 运行环境与依赖
+
+*   Python 3.9+ (推荐 Python 3.11)
+*   PyQt5
+*   NumPy
+*   Matplotlib
+*   PyInstaller (用于打包)
+
+**安装依赖 (示例使用 pip):**
+```bash
+pip install PyQt5 numpy matplotlib
+```
+
+## 如何运行
+
+### 1. 从源代码运行
+
+1.  克隆或下载本仓库。
+2.  确保已安装上述依赖库。
+3.  在项目根目录下打开终端，运行：
+    ```bash
+    python src/main.py
+    ```
+
+### 2. 运行已打包的 EXE (Windows)
+
+1.  从 `dist` 文件夹中找到 `SHGSimulator.exe`。
+2.  直接双击运行即可。程序启动可能需要几秒钟。
+
+## 如何打包 (开发者)
+
+如果你修改了源代码并希望重新打包为EXE：
+
+1.  确保已安装 PyInstaller:
+    ```bash
+    pip install pyinstaller
+    ```
+2.  在项目根目录下，确保 `IPE_logo.png` 文件存在。
+3.  运行打包命令：
+    ```bash
+    pyinstaller SHGSimulator.spec
+    ```
+    或者，如果第一次打包或不使用 `.spec` 文件：
+    ```bash
+    pyinstaller --onefile --windowed --name SHGSimulator --add-data "data;data" --add-data "IPE_logo.png;." src/main.py
+    ```
+    使用 `.spec` 文件 (`SHGSimulator.spec`) 是推荐的方式，因为它包含了更详细的配置。
+
+## 项目结构
+
+```
+shg_simulation/
+├── src/
+│   ├── main.py               # 主程序和GUI逻辑
+│   ├── point_groups.py       # 点群数据和张量处理
+│   ├── visualization.py      # (目前可能部分功能已整合到main.py)
+│   └── point_group_data.json # 点群对称性数据 (在data文件夹内)
+├── data/
+│   └── point_group_data.json # 点群对称性数据
+├── dist/                     # (打包后生成) 包含EXE文件
+├── build/                    # (打包后生成) 临时构建文件
+├── IPE_logo.png              # Logo图片
+├── SHGSimulator.spec         # PyInstaller 配置文件
+├── LICENSE                   # MIT 许可证文件
+└── README.md                 # 本文件
+```
 
 ## 技术栈
 
@@ -34,49 +99,6 @@
 *   **PyQt5**: 用于构建图形用户界面。
 *   **NumPy**: 用于高效的数值计算和张量操作。
 *   **Matplotlib**: 用于数据可视化和绘图。
-
-## 运行指南
-
-### 依赖项
-
-确保您的 Python 环境中安装了以下库：
-
-```bash
-pip install PyQt5 numpy matplotlib
-```
-
-### 从源代码运行
-
-1.  克隆或下载本仓库。
-2.  确保 `data/point_group_data.json` 文件与 `src` 目录处于正确的相对位置（通常 `data` 和 `src` 在项目根目录下同级）。
-3.  在项目根目录下运行主程序：
-
-    ```bash
-    python src/main.py
-    ```
-
-## 如何打包为可执行文件 (Windows示例)
-
-可以使用 PyInstaller 将此应用打包为单个可执行文件。
-
-1.  安装 PyInstaller:
-    ```bash
-    pip install pyinstaller
-    ```
-2.  打开命令行，导航到项目根目录。
-3.  运行以下命令来打包 (根据您的项目结构和主脚本名称调整):
-
-    ```bash
-    pyinstaller --name SHGSimulator --onefile --windowed --icon=your_icon.ico --add-data "data:data" src/main.py
-    ```
-    *   `--name SHGSimulator`: 指定输出的exe文件名。
-    *   `--onefile`: 打包成单个exe文件。
-    *   `--windowed`: 生成无控制台窗口的GUI应用。
-    *   `--icon=your_icon.ico`: (可选) 指定应用程序的图标。您需要提供一个 `.ico` 文件。
-    *   `--add-data "data:data"`: **非常重要**。这将 `data` 目录及其内容 (特别是 `point_group_data.json`) 复制到打包后的程序中，并使其在运行时可以访问。分隔符可能是 `;` (Windows) 或 `:` (Linux/macOS)，具体取决于您的操作系统和shell。如果 `data` 目录直接在 `src` 目录下，路径可能是 `--add-data "src/data:data"`。请根据您的实际项目结构调整。我们之前修改 `point_groups.py` 的目的就是为了让程序在打包后能正确找到这个 `data` 目录。
-    *   `src/main.py`: 指向您的主Python脚本。
-
-4.  打包完成后，可执行文件通常位于项目根目录下的 `dist` 文件夹中。
 
 ## 未来可能的改进
 
