@@ -551,7 +551,7 @@ class ManualInputWindow(QMainWindow):
         # 更新标题，包含检测偏振信息
         title_text = f"{preset_name} - {detection_text}\n{input_pol_text}, φ={self.phi:.1f}°"
             
-        self.canvas.axes.set_title(title_text, pad=20)
+        self.canvas.axes.set_title(title_text, y=-0.15, va='top')
         self.canvas.axes.grid(True, linestyle='--', alpha=0.5)
         self.canvas.draw()
     
@@ -1486,7 +1486,7 @@ class MainWindow(QMainWindow):
             title_text = f"{display_name} - {detection_text}\n{input_pol_text}, 光束φ={self.phi:.1f}°\n{crystal_orientation_text}"
         
         if hasattr(self.canvas, 'axes') and self.canvas.axes is not None:
-            self.canvas.axes.set_title(title_text, pad=20)
+            self.canvas.axes.set_title(title_text, y=-0.15, va='top')
         else:
             print("Warning: canvas.axes not available for title setting.")
 
@@ -2346,7 +2346,7 @@ class ManualInputWindow(QMainWindow):
         if input_pol_mode == "线偏振":
             input_pol_text += f" (α={self.alpha}°)"
         title_text = f"{preset_name} - {detection_text}\n{input_pol_text}, φ={self.phi:.1f}°"
-        self.canvas.axes.set_title(title_text, pad=20)
+        self.canvas.axes.set_title(title_text, y=-0.15, va='top')
         self.canvas.axes.grid(True, linestyle='--', alpha=0.5)
         self.canvas.draw()
     def go_back(self):
@@ -3006,7 +3006,7 @@ class MainWindow(QMainWindow):
                     input_pol_text += f" (α={self.alpha}°)"
             title_text = f"{display_name} - {detection_text}\n{input_pol_text}, 光束φ={self.phi:.1f}°\n{crystal_orientation_text}"
         if hasattr(self.canvas, 'axes') and self.canvas.axes is not None:
-            self.canvas.axes.set_title(title_text, pad=20)
+            self.canvas.axes.set_title(title_text, y=-0.15, va='top')
         else:
             print("Warning: canvas.axes not available for title setting.")
     def update_scan_mode_controls(self):
