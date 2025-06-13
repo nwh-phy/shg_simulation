@@ -1,196 +1,116 @@
 {
     "point_groups": {
         "1 = C₁ (triclinic)": {
-            "Non-zero components": [
-                "All elements are independent and nonzero"
-            ],
-            "Relations": []
+            "Non-zero components": ["All elements are independent and nonzero"]
         },
-        "m = Cₛ (monoclinic)": {
-            "Non-zero components": [
-                "xxz", "yyz", "zzz", "xxy", "yxy", "zxy", 
-                "xxx", "yxx", "zxx", "xyz", "yyy", "zyy"
-            ],
-            "Relations": []
+        "1̄ = S₂ (triclinic)": {
+            "Non-zero components": []
         },
         "2 = C₂ (monoclinic)": {
-            "Non-zero components": [
-                "zxx", "zyy", "zzz", "zxy", "zyx", 
-                "xzx", "yzy", "yzy", "xzy", "yzx"
-            ],
-            "Relations": []
+            "Non-zero components": ["xyz", "xzy", "xxy", "xyx", "yxx", "yyy", "yzz", "yzx", "yxz", "zyz", "zzy", "zxy", "zyx"]
+        },
+        "m = C₁ₕ (monoclinic)": {
+            "Non-zero components": ["xxx", "xyy", "xzz", "xzx", "xxz", "yyz", "yzy", "yxy", "yyx", "zxx", "zyy", "zzz", "zzx", "zxz"]
         },
         "2/m = C₂ₕ (monoclinic)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": []
         },
         "222 = D₂ (orthorhombic)": {
-            "Non-zero components": [
-                "xyz", "yzx", "zxy"
-            ],
-            "Relations": []
+            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"]
         },
         "mm2 = C₂ᵥ (orthorhombic)": {
-            "Non-zero components": [
-                "zxx", "zyy", "zzz", "xzy", "yzx"
-            ],
-            "Relations": []
+            "Non-zero components": ["xzx", "xxz", "yyz", "yzy", "zxx", "zyy", "zzz"]
         },
         "mmm = D₂ₕ (orthorhombic)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": []
         },
         "4 = C₄ (tetragonal)": {
-            "Non-zero components": [
-                "zxx", "zzz", "zxy", "xzy", "yzy"
-            ],
-            "Relations": [
-                "zxx=zyy", "xzy=yzx", "yzy=-xzx"
-            ]
+            "Non-zero components": ["xyz", "xzx", "xzy", "yzx", "yzy", "yyz", "zxx", "zyy", "zzz", "zxy", "zyx"],
+            "Relations": ["xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "zxx = zyy", "zxy = -zyx"]
         },
         "4̄ = S₄ (tetragonal)": {
-            "Non-zero components": [
-                "zxx", "xyz", "xzy", "yzy"
-            ],
-            "Relations": [
-                "zxx=-zyy", "xyz=-yxz", "xzy=yzx", "yzy=-xzx"
-            ]
-        },
-        "4/m = C₄ₕ (tetragonal)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": ["xyz", "xzy", "xzx", "xxz", "yzx", "yxz", "yzy", "yyz", "zxx", "zyy", "zxy", "zyx"],
+            "Relations": ["xyz = yxz", "xzy = yzx", "xzx = -yzy", "xxz = -yyz", "zxx = -zyy", "zxy = zyx"]
         },
         "422 = D₄ (tetragonal)": {
-            "Non-zero components": [
-                "xyz"
-            ],
-            "Relations": [
-                "xyz=-yxz", "xzy=-yzx"
-            ]
+            "Non-zero components": ["xyz", "xzy", "xzy", "yzx", "zxy", "zyx"],
+            "Relations": ["xyz = -yxz", "xzy = -yzx", "zxy = -zyx"]
         },
         "4mm = C₄ᵥ (tetragonal)": {
-            "Non-zero components": [
-                "zxx", "zzz", "xzy"
-            ],
-            "Relations": [
-                "zxx=zyy", "xzy=yzx"
-            ]
+            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz"],
+            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy"]
         },
         "4̄2m = D₂ₘ (tetragonal)": {
-            "Non-zero components": [
-                "xyz", "zxy"
-            ],
-            "Relations": [
-                "xyz=yxz", "xzy=yzx", "zxy=zyx"
-            ]
+            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
+            "Relations": ["xyz = yxz", "xzy = yzx", "zxy = zyx"]
+        },
+        "4/m = C₄ₕ (tetragonal)": {
+            "Non-zero components": []
         },
         "4/mmm = D₄ₕ (tetragonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "3 = C₃ (trigonal)": {
-            "Non-zero components": [
-                "xxx", "xxy", "xyy", "yxx", "yyy", "zxx", "zzz", "zxy", "xzy", "yzy"
-            ],
-            "Relations": [
-                "xxy=yxy", "xyy=-yxx", "yxx=-xyy", "yyy=-xxx", "zxx=zyy", "zxy=-zyx", "xzy=yzx", "yzy=-xzx"
-            ]
-        },
-        "3̄ = S₆ (trigonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "32 = D₃ (trigonal)": {
-            "Non-zero components": [
-                "xxx", "xyz"
-            ],
-            "Relations": [
-                "xxx=-xyy=-yxy=-yxx", "xyz=-yxz", "xzy=-yzx"
-            ]
-        },
-        "3m = C₃ᵥ (trigonal)": {
-            "Non-zero components": [
-                "yxx", "zxx", "zzz", "xxz"
-            ],
-            "Relations": [
-                "yxx=-yyy=xxy=xyx", "zxx=zyy", "xxz=yyz", "xzx=yzy"
-            ]
-        },
-        "3̄m = D₃ₐ (trigonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "6 = C₆ (hexagonal)": {
-            "Non-zero components": [
-                "zxx", "zzz", "xzy"
-            ],
-            "Relations": [
-                "zxx=zyy", "xzy=yzx", "yzy=-xzx"
-            ]
-        },
-        "6̄ = C₃ₕ (hexagonal)": {
-            "Non-zero components": [
-                "xxx"
-            ],
-            "Relations": [
-                "xxx=-xyy=-yxy=-yxx", "yyy=0"
-            ]
-        },
-        "6/m = C₆ₕ (hexagonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "622 = D₆ (hexagonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "6mm = C₆ᵥ (hexagonal)": {
-            "Non-zero components": [
-                "zxx", "zzz", "xzy"
-            ],
-            "Relations": [
-                "zxx=zyy", "xzy=yzx"
-            ]
-        },
-        "6̄m2 = D₃ₕ (hexagonal)": {
-            "Non-zero components": [
-                "yyy"
-            ],
-            "Relations": [
-                "yyy=-yxx=-xxy=-xyx", "xxx=0"
-            ]
-        },
-        "6/mmm = D₆ₕ (hexagonal)": {
-            "Non-zero components": [],
-            "Relations": []
-        },
-        "23 = T (cubic)": {
-            "Non-zero components": [
-                "xyz"
-            ],
-            "Relations": [
-                "xyz=yxz=zxy=xzy=yzx=zyx"
-            ]
-        },
-        "m3 = Tₕ (cubic)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": []
         },
         "432 = O (cubic)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
+            "Relations": ["xyz = -xzy = yzx = -yxz = zxy = -zyx"]
         },
-        "4̄3m = Tₐ (cubic)": {
-            "Non-zero components": [
-                "xyz"
-            ],
-            "Relations": [
-                "xyz=yxz=zxy=xzy=yzx=zyx"
-            ]
+        "4̄3m = Tₘ (cubic)": {
+            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
+            "Relations": ["xyz = xzy = yzx = yxz = zxy = zyx"]
+        },
+        "23 = T (cubic)": {
+            "Non-zero components": ["xyz", "yzx", "zxy", "xzy", "yxz", "zyx"],
+            "Relations": ["xyz = yzx = zxy", "xzy = yxz = zyx"]
+        },
+        "m3 = Tₕ (cubic)": {
+            "Non-zero components": []
         },
         "m3m = Oₕ (cubic)": {
-            "Non-zero components": [],
-            "Relations": []
+            "Non-zero components": []
+        },
+        "3 = C₃ (trigonal)": {
+            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "xyz", "xzy", "xzx", "xxz", "yxx", "yyy", "yyx", "yxy", "yyz", "yzy", "yzx", "yxz", "zxx", "zyy", "zyx", "zxy", "zzz", "zzx", "zxz", "zzy", "zyz"],
+            "Relations": ["xxx = -xyy = -yyx = -yxy", "xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "yyy = -yxx = -xxy = -xyx", "zxx = zyy", "zxy = -zyx"]
+        },
+        "32 = D₃ (trigonal)": {
+            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "xyz", "xzy", "yzx", "yxz", "yxx", "yyy", "yyx", "yxy", "zxy", "zyx"],
+            "Relations": ["xxx = -xyy = -yyx = -yxy", "xyz = -yxz", "xzy = -yzx", "yyy = -yxx = -xxy = -xyx", "zxy = -zyx"]
+        },
+        "3m = C₃ᵥ (trigonal)": {
+            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz", "yyy", "yxx", "xxy", "xyx"],
+            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy", "yyy = -yxx = -xxy = -xyx"]
+        },
+        "3̄ = S₆ (trigonal)": {
+            "Non-zero components": []
+        },
+        "3̄m = D₃ₘ (trigonal)": {
+            "Non-zero components": []
+        },
+        "6 = C₆ (hexagonal)": {
+            "Non-zero components": ["xyz", "xzy", "xzx", "xxz", "yzx", "yxz", "yzy", "yyz", "zxx", "zyy", "zzz", "zxy", "zyx"],
+            "Relations": ["xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "zxx = zyy", "zxy = -zyx"]
+        },
+        "6̄ = C₃ₕ (hexagonal)": {
+            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "yyy", "yxx", "yxy", "yyx"],
+            "Relations": ["xxx = -xyy = -yyx = -yxy", "yyy = -yxx = -xxy = -xyx"]
+        },
+        "622 = D₆ (hexagonal)": {
+            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
+            "Relations": ["xyz = -yxz", "xzy = -yzx", "zxy = -zyx"]
+        },
+        "6mm = C₆ᵥ (hexagonal)": {
+            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz"],
+            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy"]
+        },
+        "6̄m2 = D₃ₕ (hexagonal)": {
+            "Non-zero components": ["yyy", "yxx", "xxy", "xyx"],
+            "Relations": ["yyy = -yxx = -xxy = -xyx"]
+        },
+        "6/m = C₆ₕ (hexagonal)": {
+            "Non-zero components": []
+        },
+        "6/mmm = D₆ₕ (hexagonal)": {
+            "Non-zero components": []
         }
     }
 }
