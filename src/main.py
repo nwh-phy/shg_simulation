@@ -14,10 +14,12 @@ from matplotlib.figure import Figure
 from mpl_toolkits.mplot3d import Axes3D
 from sympy.printing.mathematica import mathematica_code
 
-from visualization import plot_polarization_intensity
+from visualization import plot_polarization_intensity, add_logo_to_figure, configure_matplotlib
 from point_groups import (point_group_components, create_tensor_with_relations, 
                         get_all_point_groups, get_components_for_group, str_to_indices)
 from symbolic_calculator import calculate_symbolic_shg_expressions
+
+configure_matplotlib()
 
 # 定义常见晶体的预设参数
 # 系数值是相对于点群独立分量的乘数，这里的数值是为了演示，实际应用中应参考精确文献值并考虑单位
@@ -97,27 +99,6 @@ def rotate_tensor(tensor_crystal, R):
     return tensor_lab
 # --- 结束 欧拉角旋转辅助函数 ---
 
-# 检查LaTeX是否可用 - 更安全的方法
-def is_latex_available():
-    try:
-        # 简单检查是否安装了latex命令
-        import shutil
-        return shutil.which('latex') is not None
-    except:
-        return False
-
-# 配置matplotlib支持中文显示
-# 请确保以下列表中的至少一种字体在您的系统上可用
-# 微软雅黑 (Microsoft YaHei), 黑体 (SimHei), 宋体 (SimSun), 或 Arial
-# 更新为更适合 macOS 的字体列表，同时保留 Windows 常用字体作为后备
-matplotlib.rcParams['font.sans-serif'] = ['PingFang SC', 'Heiti SC', 'STHeiti', 'Microsoft YaHei', 'SimHei', 'SimSun', 'Arial', 'sans-serif']
-matplotlib.rcParams['axes.unicode_minus'] = False  # 正确显示负号
-matplotlib.rcParams['font.size'] = 14
-matplotlib.rcParams['lines.linewidth'] = 2
-
-# 禁用LaTeX，使用普通文本渲染
-use_latex = False  # 直接设置为False，避免LaTeX相关问题
-
 # 创建一个自定义的QSlider类，支持双击事件
 class ClickableSlider(QSlider):
     doubleClicked = pyqtSignal()
@@ -142,10 +123,6 @@ class PlotCanvas(FigureCanvas):
         self.logo_ax_on_fig = None # Renamed for clarity
 
     def draw_logo_on_figure(self, q_image_logo):
-        if q_image_logo is None or q_image_logo.isNull():
-            print("Logo QImage is null, skipping drawing logo on figure.")
-            return
-
         if self.logo_ax_on_fig:
             try:
                 self.logo_ax_on_fig.remove()
@@ -153,44 +130,12 @@ class PlotCanvas(FigureCanvas):
                 print(f"Error removing previous logo_ax_on_fig: {e}")
             self.logo_ax_on_fig = None
         
-        try:
-            ptr = q_image_logo.bits()
-            ptr.setsize(q_image_logo.byteCount())
-            if q_image_logo.format() != QImage.Format_RGBA8888 and q_image_logo.format() != QImage.Format_ARGB32:
-                 temp_image = q_image_logo.convertToFormat(QImage.Format_RGBA8888)
-                 if temp_image.isNull():
-                     print("Error: Could not convert QImage to RGBA8888 for logo.")
-                     return
-                 ptr = temp_image.bits()
-                 ptr.setsize(temp_image.byteCount())
-                 logo_numpy_array = np.array(ptr).reshape(temp_image.height(), temp_image.width(), 4)
-            else:
-                 logo_numpy_array = np.array(ptr).reshape(q_image_logo.height(), q_image_logo.width(), 4)
-
-            fig_width_px, fig_height_px = self.fig.get_size_inches() * self.fig.dpi
-            image_aspect_ratio = q_image_logo.width() / q_image_logo.height()
-
-            margin_fig_rel = 0.01  
-            logo_height_fig_rel = 0.08  # <--- MODIFIED: Increased relative height
-            
-            logo_width_px = logo_height_fig_rel * fig_height_px * image_aspect_ratio
-            logo_width_fig_rel = logo_width_px / fig_width_px
-            
-            rect_left_fig = margin_fig_rel
-            rect_bottom_fig = 1.0 - margin_fig_rel - logo_height_fig_rel
-            
-            self.logo_ax_on_fig = self.fig.add_axes(
-                [rect_left_fig, rect_bottom_fig, logo_width_fig_rel, logo_height_fig_rel],
-                anchor='NW', 
-                zorder=20
-            )
-            self.logo_ax_on_fig.imshow(logo_numpy_array)
-            self.logo_ax_on_fig.axis('off')
-
-        except Exception as e:
-            print(f"Error drawing logo on figure: {e}")
-            import traceback
-            traceback.print_exc()
+        self.logo_ax_on_fig = add_logo_to_figure(
+            self.fig, 
+            q_image_logo, 
+            position='top-left', 
+            size=0.08
+        )
 
 class ManualInputWindow(QMainWindow):
     def __init__(self, parent=None):

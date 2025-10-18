@@ -1,6 +1,17 @@
+"""
+DEPRECATED: This module is deprecated and maintained only for backward compatibility.
+Use src.visualization.create_2d_polar_plot() instead.
+"""
+import warnings
 import numpy as np
 import matplotlib.pyplot as plt
 from matplotlib.widgets import Slider
+
+warnings.warn(
+    "interactive_panel module is deprecated. Use visualization.create_2d_polar_plot() instead.",
+    DeprecationWarning,
+    stacklevel=2
+)
 
 class InteractivePanel:
     def __init__(self, tensor, components):
