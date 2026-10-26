@@ -1,116 +1,2036 @@
 {
-    "point_groups": {
-        "1 = C₁ (triclinic)": {
-            "Non-zero components": ["All elements are independent and nonzero"]
+  "schema_version": 2,
+  "convention": "Relative d_ijk=chi_ijk/2; jk symmetric; no Kleinman assumption. P/(2 epsilon0)=d:E:E. Active ZYZ Rz(phi)Ry(theta)Rz(psi). 3m/-6m2 mirror yz; monoclinic unique axis y.",
+  "derivation": "tools/generate_tensor_catalog.py: exact nullspace of point-group invariance with SHG jk symmetry",
+  "references": [
+    "https://bfichera.github.io/shgpy/tutorial/tensor_tutorial.html",
+    "https://doi.org/10.1038/s41524-022-00930-4"
+  ],
+  "point_groups": {
+    "1 = C₁ (triclinic)": {
+      "Non-zero components": [
+        "xxx",
+        "xxy",
+        "xxz",
+        "xyx",
+        "xyy",
+        "xyz",
+        "xzx",
+        "xzy",
+        "xzz",
+        "yxx",
+        "yxy",
+        "yxz",
+        "yyx",
+        "yyy",
+        "yyz",
+        "yzx",
+        "yzy",
+        "yzz",
+        "zxx",
+        "zxy",
+        "zxz",
+        "zyx",
+        "zyy",
+        "zyz",
+        "zzx",
+        "zzy",
+        "zzz"
+      ],
+      "Independent components": [
+        "xxx",
+        "xyy",
+        "xzz",
+        "xyz",
+        "xxz",
+        "xxy",
+        "yxx",
+        "yyy",
+        "yzz",
+        "yyz",
+        "yxz",
+        "yxy",
+        "zxx",
+        "zyy",
+        "zzz",
+        "zyz",
+        "zxz",
+        "zxy"
+      ],
+      "Relations": [
+        "xyz = xzy",
+        "xxz = xzx",
+        "xxy = xyx",
+        "yyz = yzy",
+        "yxz = yzx",
+        "yxy = yyx",
+        "zyz = zzy",
+        "zxz = zzx",
+        "zxy = zyx"
+      ],
+      "Basis": {
+        "xxx": {
+          "xxx": 1
         },
-        "1̄ = S₂ (triclinic)": {
-            "Non-zero components": []
+        "xyy": {
+          "xyy": 1
         },
-        "2 = C₂ (monoclinic)": {
-            "Non-zero components": ["xyz", "xzy", "xxy", "xyx", "yxx", "yyy", "yzz", "yzx", "yxz", "zyz", "zzy", "zxy", "zyx"]
+        "xzz": {
+          "xzz": 1
         },
-        "m = C₁ₕ (monoclinic)": {
-            "Non-zero components": ["xxx", "xyy", "xzz", "xzx", "xxz", "yyz", "yzy", "yxy", "yyx", "zxx", "zyy", "zzz", "zzx", "zxz"]
+        "xyz": {
+          "xyz": 1,
+          "xzy": 1
         },
-        "2/m = C₂ₕ (monoclinic)": {
-            "Non-zero components": []
+        "xxz": {
+          "xxz": 1,
+          "xzx": 1
         },
-        "222 = D₂ (orthorhombic)": {
-            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"]
+        "xxy": {
+          "xxy": 1,
+          "xyx": 1
         },
-        "mm2 = C₂ᵥ (orthorhombic)": {
-            "Non-zero components": ["xzx", "xxz", "yyz", "yzy", "zxx", "zyy", "zzz"]
+        "yxx": {
+          "yxx": 1
         },
-        "mmm = D₂ₕ (orthorhombic)": {
-            "Non-zero components": []
+        "yyy": {
+          "yyy": 1
         },
-        "4 = C₄ (tetragonal)": {
-            "Non-zero components": ["xyz", "xzx", "xzy", "yzx", "yzy", "yyz", "zxx", "zyy", "zzz", "zxy", "zyx"],
-            "Relations": ["xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "zxx = zyy", "zxy = -zyx"]
+        "yzz": {
+          "yzz": 1
         },
-        "4̄ = S₄ (tetragonal)": {
-            "Non-zero components": ["xyz", "xzy", "xzx", "xxz", "yzx", "yxz", "yzy", "yyz", "zxx", "zyy", "zxy", "zyx"],
-            "Relations": ["xyz = yxz", "xzy = yzx", "xzx = -yzy", "xxz = -yyz", "zxx = -zyy", "zxy = zyx"]
+        "yyz": {
+          "yyz": 1,
+          "yzy": 1
         },
-        "422 = D₄ (tetragonal)": {
-            "Non-zero components": ["xyz", "xzy", "xzy", "yzx", "zxy", "zyx"],
-            "Relations": ["xyz = -yxz", "xzy = -yzx", "zxy = -zyx"]
+        "yxz": {
+          "yxz": 1,
+          "yzx": 1
         },
-        "4mm = C₄ᵥ (tetragonal)": {
-            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz"],
-            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy"]
+        "yxy": {
+          "yxy": 1,
+          "yyx": 1
         },
-        "4̄2m = D₂ₘ (tetragonal)": {
-            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
-            "Relations": ["xyz = yxz", "xzy = yzx", "zxy = zyx"]
+        "zxx": {
+          "zxx": 1
         },
-        "4/m = C₄ₕ (tetragonal)": {
-            "Non-zero components": []
+        "zyy": {
+          "zyy": 1
         },
-        "4/mmm = D₄ₕ (tetragonal)": {
-            "Non-zero components": []
+        "zzz": {
+          "zzz": 1
         },
-        "432 = O (cubic)": {
-            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
-            "Relations": ["xyz = -xzy = yzx = -yxz = zxy = -zyx"]
+        "zyz": {
+          "zyz": 1,
+          "zzy": 1
         },
-        "4̄3m = Tₘ (cubic)": {
-            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
-            "Relations": ["xyz = xzy = yzx = yxz = zxy = zyx"]
+        "zxz": {
+          "zxz": 1,
+          "zzx": 1
         },
-        "23 = T (cubic)": {
-            "Non-zero components": ["xyz", "yzx", "zxy", "xzy", "yxz", "zyx"],
-            "Relations": ["xyz = yzx = zxy", "xzy = yxz = zyx"]
-        },
-        "m3 = Tₕ (cubic)": {
-            "Non-zero components": []
-        },
-        "m3m = Oₕ (cubic)": {
-            "Non-zero components": []
-        },
-        "3 = C₃ (trigonal)": {
-            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "xyz", "xzy", "xzx", "xxz", "yxx", "yyy", "yyx", "yxy", "yyz", "yzy", "yzx", "yxz", "zxx", "zyy", "zyx", "zxy", "zzz", "zzx", "zxz", "zzy", "zyz"],
-            "Relations": ["xxx = -xyy = -yyx = -yxy", "xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "yyy = -yxx = -xxy = -xyx", "zxx = zyy", "zxy = -zyx"]
-        },
-        "32 = D₃ (trigonal)": {
-            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "xyz", "xzy", "yzx", "yxz", "yxx", "yyy", "yyx", "yxy", "zxy", "zyx"],
-            "Relations": ["xxx = -xyy = -yyx = -yxy", "xyz = -yxz", "xzy = -yzx", "yyy = -yxx = -xxy = -xyx", "zxy = -zyx"]
-        },
-        "3m = C₃ᵥ (trigonal)": {
-            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz", "yyy", "yxx", "xxy", "xyx"],
-            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy", "yyy = -yxx = -xxy = -xyx"]
-        },
-        "3̄ = S₆ (trigonal)": {
-            "Non-zero components": []
-        },
-        "3̄m = D₃ₘ (trigonal)": {
-            "Non-zero components": []
-        },
-        "6 = C₆ (hexagonal)": {
-            "Non-zero components": ["xyz", "xzy", "xzx", "xxz", "yzx", "yxz", "yzy", "yyz", "zxx", "zyy", "zzz", "zxy", "zyx"],
-            "Relations": ["xyz = -yxz", "xzy = -yzx", "xzx = yzy", "xxz = yyz", "zxx = zyy", "zxy = -zyx"]
-        },
-        "6̄ = C₃ₕ (hexagonal)": {
-            "Non-zero components": ["xxx", "xyy", "xyx", "xxy", "yyy", "yxx", "yxy", "yyx"],
-            "Relations": ["xxx = -xyy = -yyx = -yxy", "yyy = -yxx = -xxy = -xyx"]
-        },
-        "622 = D₆ (hexagonal)": {
-            "Non-zero components": ["xyz", "xzy", "yzx", "yxz", "zxy", "zyx"],
-            "Relations": ["xyz = -yxz", "xzy = -yzx", "zxy = -zyx"]
-        },
-        "6mm = C₆ᵥ (hexagonal)": {
-            "Non-zero components": ["xzx", "yzy", "xxz", "yyz", "zxx", "zyy", "zzz"],
-            "Relations": ["xzx = yzy", "xxz = yyz", "zxx = zyy"]
-        },
-        "6̄m2 = D₃ₕ (hexagonal)": {
-            "Non-zero components": ["yyy", "yxx", "xxy", "xyx"],
-            "Relations": ["yyy = -yxx = -xxy = -xyx"]
-        },
-        "6/m = C₆ₕ (hexagonal)": {
-            "Non-zero components": []
-        },
-        "6/mmm = D₆ₕ (hexagonal)": {
-            "Non-zero components": []
+        "zxy": {
+          "zxy": 1,
+          "zyx": 1
         }
+      },
+      "Generators": []
+    },
+    "1̄ = S₂ (triclinic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "2 = C₂ (monoclinic)": {
+      "Non-zero components": [
+        "xxy",
+        "xyx",
+        "xyz",
+        "xzy",
+        "yxx",
+        "yxz",
+        "yyy",
+        "yzx",
+        "yzz",
+        "zxy",
+        "zyx",
+        "zyz",
+        "zzy"
+      ],
+      "Independent components": [
+        "xyz",
+        "xxy",
+        "yxx",
+        "yyy",
+        "yzz",
+        "yxz",
+        "zyz",
+        "zxy"
+      ],
+      "Relations": [
+        "xyz = xzy",
+        "xxy = xyx",
+        "yxz = yzx",
+        "zyz = zzy",
+        "zxy = zyx"
+      ],
+      "Basis": {
+        "xyz": {
+          "xyz": 1,
+          "xzy": 1
+        },
+        "xxy": {
+          "xxy": 1,
+          "xyx": 1
+        },
+        "yxx": {
+          "yxx": 1
+        },
+        "yyy": {
+          "yyy": 1
+        },
+        "yzz": {
+          "yzz": 1
+        },
+        "yxz": {
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zyz": {
+          "zyz": 1,
+          "zzy": 1
+        },
+        "zxy": {
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "m = C₁ₕ (monoclinic)": {
+      "Non-zero components": [
+        "xxx",
+        "xxz",
+        "xyy",
+        "xzx",
+        "xzz",
+        "yxy",
+        "yyx",
+        "yyz",
+        "yzy",
+        "zxx",
+        "zxz",
+        "zyy",
+        "zzx",
+        "zzz"
+      ],
+      "Independent components": [
+        "xxx",
+        "xyy",
+        "xzz",
+        "xxz",
+        "yyz",
+        "yxy",
+        "zxx",
+        "zyy",
+        "zzz",
+        "zxz"
+      ],
+      "Relations": [
+        "xxz = xzx",
+        "yyz = yzy",
+        "yxy = yyx",
+        "zxz = zzx"
+      ],
+      "Basis": {
+        "xxx": {
+          "xxx": 1
+        },
+        "xyy": {
+          "xyy": 1
+        },
+        "xzz": {
+          "xzz": 1
+        },
+        "xxz": {
+          "xxz": 1,
+          "xzx": 1
+        },
+        "yyz": {
+          "yyz": 1,
+          "yzy": 1
+        },
+        "yxy": {
+          "yxy": 1,
+          "yyx": 1
+        },
+        "zxx": {
+          "zxx": 1
+        },
+        "zyy": {
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        },
+        "zxz": {
+          "zxz": 1,
+          "zzx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "2/m = C₂ₕ (monoclinic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "222 = D₂ (orthorhombic)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx",
+        "zxy",
+        "zyx"
+      ],
+      "Independent components": [
+        "xyz",
+        "yxz",
+        "zxy"
+      ],
+      "Relations": [
+        "xyz = xzy",
+        "yxz = yzx",
+        "zxy = zyx"
+      ],
+      "Basis": {
+        "xyz": {
+          "xyz": 1,
+          "xzy": 1
+        },
+        "yxz": {
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zxy": {
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "mm2 = C₂ᵥ (orthorhombic)": {
+      "Non-zero components": [
+        "xxz",
+        "xzx",
+        "yyz",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "xxz",
+        "yyz",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "xxz = xzx",
+        "yyz = yzy"
+      ],
+      "Basis": {
+        "xxz": {
+          "xxz": 1,
+          "xzx": 1
+        },
+        "yyz": {
+          "yyz": 1,
+          "yzy": 1
+        },
+        "zxx": {
+          "zxx": 1
+        },
+        "zyy": {
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "mmm = D₂ₕ (orthorhombic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "4 = C₄ (tetragonal)": {
+      "Non-zero components": [
+        "xxz",
+        "xyz",
+        "xzx",
+        "xzy",
+        "yxz",
+        "yyz",
+        "yzx",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyz",
+        "yxz",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyz = xxz = xzx = yzy",
+        "yxz = -xyz = -xzy = yzx",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "4̄ = S₄ (tetragonal)": {
+      "Non-zero components": [
+        "xxz",
+        "xyz",
+        "xzx",
+        "xzy",
+        "yxz",
+        "yyz",
+        "yzx",
+        "yzy",
+        "zxx",
+        "zxy",
+        "zyx",
+        "zyy"
+      ],
+      "Independent components": [
+        "yyz",
+        "yxz",
+        "zyy",
+        "zxy"
+      ],
+      "Relations": [
+        "yyz = -xxz = -xzx = yzy",
+        "yxz = xyz = xzy = yzx",
+        "zyy = -zxx",
+        "zxy = zyx"
+      ],
+      "Basis": {
+        "yyz": {
+          "xxz": -1,
+          "xzx": -1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "yxz": {
+          "xyz": 1,
+          "xzy": 1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zyy": {
+          "zxx": -1,
+          "zyy": 1
+        },
+        "zxy": {
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "422 = D₄ (tetragonal)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx"
+      ],
+      "Independent components": [
+        "yxz"
+      ],
+      "Relations": [
+        "yxz = -xyz = -xzy = yzx"
+      ],
+      "Basis": {
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "4mm = C₄ᵥ (tetragonal)": {
+      "Non-zero components": [
+        "xxz",
+        "xzx",
+        "yyz",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyz",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyz = xxz = xzx = yzy",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "4̄2m = D₂d (tetragonal)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx",
+        "zxy",
+        "zyx"
+      ],
+      "Independent components": [
+        "yxz",
+        "zxy"
+      ],
+      "Relations": [
+        "yxz = xyz = xzy = yzx",
+        "zxy = zyx"
+      ],
+      "Basis": {
+        "yxz": {
+          "xyz": 1,
+          "xzy": 1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zxy": {
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "4/m = C₄ₕ (tetragonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "4/mmm = D₄ₕ (tetragonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "432 = O (cubic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ]
+      ]
+    },
+    "4̄3m = Td (cubic)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx",
+        "zxy",
+        "zyx"
+      ],
+      "Independent components": [
+        "zxy"
+      ],
+      "Relations": [
+        "zxy = xyz = xzy = yxz = yzx = zyx"
+      ],
+      "Basis": {
+        "zxy": {
+          "xyz": 1,
+          "xzy": 1,
+          "yxz": 1,
+          "yzx": 1,
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ]
+      ]
+    },
+    "23 = T (cubic)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx",
+        "zxy",
+        "zyx"
+      ],
+      "Independent components": [
+        "zxy"
+      ],
+      "Relations": [
+        "zxy = xyz = xzy = yxz = yzx = zyx"
+      ],
+      "Basis": {
+        "zxy": {
+          "xyz": 1,
+          "xzy": 1,
+          "yxz": 1,
+          "yzx": 1,
+          "zxy": 1,
+          "zyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ]
+      ]
+    },
+    "m3̄ = Tₕ (cubic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "m3̄m = Oₕ (cubic)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            0.0,
+            0.0,
+            1.0
+          ],
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "3 = C₃ (trigonal)": {
+      "Non-zero components": [
+        "xxx",
+        "xxy",
+        "xxz",
+        "xyx",
+        "xyy",
+        "xyz",
+        "xzx",
+        "xzy",
+        "yxx",
+        "yxy",
+        "yxz",
+        "yyx",
+        "yyy",
+        "yyz",
+        "yzx",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyy",
+        "yyz",
+        "yxz",
+        "yxy",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyy = -xxy = -xyx = -yxx",
+        "yyz = xxz = xzx = yzy",
+        "yxz = -xyz = -xzy = yzx",
+        "yxy = -xxx = xyy = yyx",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyy": {
+          "xxy": -1,
+          "xyx": -1,
+          "yxx": -1,
+          "yyy": 1
+        },
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "yxy": {
+          "xxx": -1,
+          "xyy": 1,
+          "yxy": 1,
+          "yyx": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "32 = D₃ (trigonal)": {
+      "Non-zero components": [
+        "xxx",
+        "xyy",
+        "xyz",
+        "xzy",
+        "yxy",
+        "yxz",
+        "yyx",
+        "yzx"
+      ],
+      "Independent components": [
+        "yxz",
+        "yxy"
+      ],
+      "Relations": [
+        "yxz = -xyz = -xzy = yzx",
+        "yxy = -xxx = xyy = yyx"
+      ],
+      "Basis": {
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "yxy": {
+          "xxx": -1,
+          "xyy": 1,
+          "yxy": 1,
+          "yyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "3m = C₃ᵥ (trigonal)": {
+      "Non-zero components": [
+        "xxy",
+        "xxz",
+        "xyx",
+        "xzx",
+        "yxx",
+        "yyy",
+        "yyz",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyy",
+        "yyz",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyy = -xxy = -xyx = -yxx",
+        "yyz = xxz = xzx = yzy",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyy": {
+          "xxy": -1,
+          "xyx": -1,
+          "yxx": -1,
+          "yyy": 1
+        },
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "3̄ = S₆ (trigonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.5,
+            0.8660254037844386,
+            0.0
+          ],
+          [
+            -0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "3̄m = D₃d (trigonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            -0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "6 = C₆ (hexagonal)": {
+      "Non-zero components": [
+        "xxz",
+        "xyz",
+        "xzx",
+        "xzy",
+        "yxz",
+        "yyz",
+        "yzx",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyz",
+        "yxz",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyz = xxz = xzx = yzy",
+        "yxz = -xyz = -xzy = yzx",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "6̄ = C₃ₕ (hexagonal)": {
+      "Non-zero components": [
+        "xxx",
+        "xxy",
+        "xyx",
+        "xyy",
+        "yxx",
+        "yxy",
+        "yyx",
+        "yyy"
+      ],
+      "Independent components": [
+        "yyy",
+        "yxy"
+      ],
+      "Relations": [
+        "yyy = -xxy = -xyx = -yxx",
+        "yxy = -xxx = xyy = yyx"
+      ],
+      "Basis": {
+        "yyy": {
+          "xxy": -1,
+          "xyx": -1,
+          "yxx": -1,
+          "yyy": 1
+        },
+        "yxy": {
+          "xxx": -1,
+          "xyy": 1,
+          "yxy": 1,
+          "yyx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -0.5,
+            0.8660254037844386,
+            0.0
+          ],
+          [
+            -0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "622 = D₆ (hexagonal)": {
+      "Non-zero components": [
+        "xyz",
+        "xzy",
+        "yxz",
+        "yzx"
+      ],
+      "Independent components": [
+        "yxz"
+      ],
+      "Relations": [
+        "yxz = -xyz = -xzy = yzx"
+      ],
+      "Basis": {
+        "yxz": {
+          "xyz": -1,
+          "xzy": -1,
+          "yxz": 1,
+          "yzx": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "6mm = C₆ᵥ (hexagonal)": {
+      "Non-zero components": [
+        "xxz",
+        "xzx",
+        "yyz",
+        "yzy",
+        "zxx",
+        "zyy",
+        "zzz"
+      ],
+      "Independent components": [
+        "yyz",
+        "zyy",
+        "zzz"
+      ],
+      "Relations": [
+        "yyz = xxz = xzx = yzy",
+        "zyy = zxx"
+      ],
+      "Basis": {
+        "yyz": {
+          "xxz": 1,
+          "xzx": 1,
+          "yyz": 1,
+          "yzy": 1
+        },
+        "zyy": {
+          "zxx": 1,
+          "zyy": 1
+        },
+        "zzz": {
+          "zzz": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ]
+      ]
+    },
+    "6̄m2 = D₃ₕ (hexagonal)": {
+      "Non-zero components": [
+        "xxy",
+        "xyx",
+        "yxx",
+        "yyy"
+      ],
+      "Independent components": [
+        "yyy"
+      ],
+      "Relations": [
+        "yyy = -xxy = -xyx = -yxx"
+      ],
+      "Basis": {
+        "yyy": {
+          "xxy": -1,
+          "xyx": -1,
+          "yxx": -1,
+          "yyy": 1
+        }
+      },
+      "Generators": [
+        [
+          [
+            -0.5,
+            0.8660254037844386,
+            0.0
+          ],
+          [
+            -0.8660254037844386,
+            -0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "6/m = C₆ₕ (hexagonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
+    },
+    "6/mmm = D₆ₕ (hexagonal)": {
+      "Non-zero components": [],
+      "Independent components": [],
+      "Relations": [],
+      "Basis": {},
+      "Generators": [
+        [
+          [
+            0.5,
+            -0.8660254037844386,
+            0.0
+          ],
+          [
+            0.8660254037844386,
+            0.5,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            1.0
+          ]
+        ],
+        [
+          [
+            1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ],
+        [
+          [
+            -1.0,
+            0.0,
+            0.0
+          ],
+          [
+            0.0,
+            -1.0,
+            0.0
+          ],
+          [
+            0.0,
+            0.0,
+            -1.0
+          ]
+        ]
+      ]
     }
+  }
 }

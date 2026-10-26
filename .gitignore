@@ -45,4 +45,11 @@ venv.bak/
 *.pydevproject
 
 # macOS specific files
-.DS_Store 
+.DS_Store
+
+# Local agent settings and analysis outputs
+.claude/
+.pytest_cache/
+exports/
+SHG_analysis_*/
+shg_extract_*/

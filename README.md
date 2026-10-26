@@ -1,124 +1,76 @@
-# SHG 非线性极化模拟器 (SHGSimulator)
+# SHG 实验分析工作台
 
-## 简介
+面向二维材料反射 SHG 的 Windows 图形工具：逐角度光谱导入、信号提取、双通道联合拟合、张量模拟和可追溯报告。
 
-SHGSimulator 是一个用 Python 和 PyQt5 开发的图形用户界面应用程序，用于模拟和可视化材料的二次谐波产生 (SHG) 非线性极化效应。用户可以选择不同的晶体点群、调整张量分量、设置入射光参数，并观察产生的SHG强度极图。
+![工作台界面（明确标记的模拟数据）](docs/workbench_demo.png)
 
-## 主要特性
+## 不运行代码的使用方式
 
-*   **图形用户界面**：基于 PyQt5 构建，操作直观。
-*   **点群选择**：支持多种常见晶体点群，自动确定非零张量分量。
-*   **常见晶体预设**：内置LiNbO3, KDP等常见晶体的参数，方便快速加载。
-*   **参数可调**：
-    *   独立调整非零张量分量的相对强度。
-    *   调整晶体欧拉角 (φc, θc, ψc) 以改变晶体朝向。
-    *   选择不同的扫描模式：
-        *   入射角扫描 (θ-极图)
-        *   偏振角扫描 (α vs SHG强度，笛卡尔图)
-        *   偏振角扫描 (α-强度极图)
-        *   3D θinc-αinc 扫描
-    *   对于入射角扫描：可设置光束方位角 (φ) 和入射光偏振态 (默认θ偏振, 线偏振及角度α, 左旋/右旋圆偏振)。
-    *   对于偏振角扫描：可设置固定的入射天顶角 (θinc) 和入射方位角 (φinc)。
-*   **检测偏振分析**：可分析总SHG强度，或平行/垂直于入射光偏振方向的SHG分量。
-*   **实时可视化**：使用 Matplotlib 动态绘制SHG强度图样。
-*   **手动张量输入模式**：允许用户直接输入 3x6 的 dij 张量矩阵。
-*   **3D SHG 图样显示**：可根据当前参数绘制3D的SHG辐射方向图或 (θinc, αinc) 强度扫描图。
-*   **符号计算与解析表达式**：针对垂直入射情况，可计算选定点群的二次谐波强度关于入射光偏振角 (alpha) 的解析表达式 (P<sub>x</sub>, P<sub>y</sub>, P<sub>z</sub>, I<sub>total</sub>, I<sub>parallel</sub>, I<sub>perpendicular</sub>)。支持以 SymPy 字符串、LaTeX 源码和 Mathematica 代码格式显示 3x6 Voigt 形式的 d 张量和相关表达式。
-*   **内置Logo**：界面中包含IPE课题组Logo。
-*   **可打包为EXE**：使用 PyInstaller 将程序打包为单文件可执行程序，方便在Windows上分发和运行。
+从 [GitHub Releases](https://github.com/nwh-phy/shg_simulation/releases) 下载 `SHGWorkbench-2.0.0.exe` 或便携 ZIP，双击即可，无需安装 Python。原有旧 EXE 不含这些功能。
 
-## 运行环境与依赖
+程序提供四个页面：
 
-*   Python 3.9+ (推荐 Python 3.11)
-*   PyQt5
-*   NumPy
-*   Matplotlib
-*   SymPy (用于符号计算)
-*   PyInstaller (用于打包)
+1. **导入与光谱**：两列角度曲线、三列光谱长表、逐文件光谱目录；步长手动必填；预览原谱和信号／背景波段。
+2. **联合拟合与报告**：平行／垂直通道共享取向和张量参数；多起点拟合、残差重采样、可辨识检查；PNG/PDF、参数、残差和 HTML 报告。
+3. **张量与解析式**：32 个点群的独立参数，关联分量自动生成，数值与解析式使用同一定义。
+4. **使用说明**：鼠标操作步骤、模型选择与错误处理。
 
-**安装依赖 (示例使用 pip):**
-```bash
-pip install PyQt5 numpy matplotlib sympy
+首次可点击“载入模拟示例”学习操作。演示数据有明确标记，不是实验数据。
+
+- [师兄使用说明](docs/使用说明.md)
+- [数据格式](docs/experimental_data_format.md)
+- [数学定义与证据边界](docs/physics_model.md)
+
+## 研究约定
+
+角度为已经换算好的入射偏振角，单位为度，不再乘二。目录导入按“起始角＋序号×手动步长”映射，不猜测步长、不补闭合点、不按周期合并测量。
+
+原始数据只读。提取方法、背景、曝光／功率设置、排除点及理由、实际采样波长和输入文件 SHA-256 都保留。近似误差传播与参数区间依赖明确的噪声和物理模型，不是全部系统误差。
+
+拟合面向接近正入射的面内电偶极薄片，可显式考虑各向同性单一基底或介质膜／基底的线性局域场。缺少光学常数和绝对标定时，只做相对图样分析，不从探测器计数声称获得绝对 χ。高 NA、显著面外响应、基底 SHG 和多来源相干干涉不在此模型范围内。
+
+材料点群必须由使用者选择，软件不根据六瓣图样自动判定材料。张量比拟合固定参考分量及整体相位；不可辨识时不给参数区间。中心对称体材料的电偶极零张量不能用于排除表面或其他 SHG 机制。
+
+## 开发运行
+
+Python 3.11 的 Windows 64 位环境已用于本版构建。
+
+```powershell
+python -m pip install -r requirements.txt
+python src/main.py
 ```
 
-## 如何运行
+`python src/run_workbench.py` 是相同的完整程序入口。`python src/run_experimental_import.py` 只打开光谱导入工具；`python src/run_new_ui.py` 打开张量模拟页。
 
-### 1. 从源代码运行
+命令行提取与 GUI 共用实现：
 
-1.  克隆或下载本仓库。
-2.  确保已安装上述依赖库。
-3.  在项目根目录下打开终端，运行：
-    ```bash
-    python src/main.py
-    ```
-
-### 2. 运行已打包的 EXE (Windows)
-
-1.  从 `dist` 文件夹中找到 `SHGSimulator.exe`。
-2.  直接双击运行即可。程序启动可能需要几秒钟。
-
-## 如何打包 (开发者)
-
-如果你修改了源代码并希望重新打包为EXE：
-
-1.  确保已安装 PyInstaller:
-    ```bash
-    pip install pyinstaller
-    ```
-2.  在项目根目录下，确保 `IPE_logo.png` 文件存在。
-3.  运行打包命令：
-    ```bash
-    pyinstaller SHGSimulator.spec
-    ```
-    或者，如果第一次打包或不使用 `.spec` 文件：
-    ```bash
-    pyinstaller --onefile --windowed --name SHGSimulator --add-data "data;data" --add-data "IPE_logo.png;." src/main.py
-    ```
-    使用 `.spec` 文件 (`SHGSimulator.spec`) 是推荐的方式，因为它包含了更详细的配置。
-
-## 项目结构
-
-```
-shg_simulation/
-├── src/
-│   ├── main.py               # 主程序和GUI逻辑
-│   ├── point_groups.py       # 点群数据和张量处理
-│   ├── symbolic_calculator.py # 符号计算SHG表达式逻辑
-│   ├── visualization.py      # (目前可能部分功能已整合到main.py)
-│   └── point_group_data.json # 点群对称性数据 (在data文件夹内)
-├── data/
-│   └── point_group_data.json # 点群对称性数据
-├── dist/                     # (打包后生成) 包含EXE文件
-├── build/                    # (打包后生成) 临时构建文件
-├── IPE_logo.png              # Logo图片
-├── SHGSimulator.spec         # PyInstaller 配置文件
-├── LICENSE                   # MIT 许可证文件
-└── README.md                 # 本文件
+```powershell
+python src/import_shg_data.py 'D:/SHG数据/样品1/平行通道' --kind folder --step-deg 12 --target-nm 532 --method integral --half-width-nm 1 --background 510 525 --background 539 560 --output './exports/new_run'
 ```
 
-## 技术栈
+上面的 12°、532 nm 和波段仅为示例，应替换为本次实验的实际设置；输出目录必须不存在。
 
-*   **Python 3**: 主要编程语言。
-*   **PyQt5**: 用于构建图形用户界面。
-*   **NumPy**: 用于高效的数值计算和张量操作。
-*   **Matplotlib**: 用于数据可视化和绘图。
-*   **SymPy**: 用于符号计算，生成解析表达式。
+## 验证与打包
 
-## 未来可能的改进
+```powershell
+python -m pip install pytest==8.4.2
+python -m pytest tests/ src/test_new_architecture.py -q
+python tools/generate_tensor_catalog.py
+python -m venv build/release-venv
+& './build/release-venv/Scripts/python.exe' -m pip install -r requirements-release.txt
+& './build/release-venv/Scripts/python.exe' tools/build_windows.py
+```
 
-*   **更精确的材料数据库**: 引入包含波长依赖的、更广泛的非线性材料的精确 d<sub>ij</sub> 系数值。
-*   **相位匹配条件**: 考虑相位匹配对SHG效率的影响。
-*   **多层膜结构**: 支持多层薄膜样品中的SHG模拟。
-*   **聚焦光束**: 模拟高斯光束等聚焦光束下的SHG。
-*   **输出数据导出**: 允许用户将计算结果或图表数据导出为文本或图像文件。
-*   **符号表达式增强**: 进一步增强符号表达式的显示，例如支持直接渲染LaTeX数学公式到GUI，或提供更多导出格式。
-*   **更高级的3D可视化**: 使用更专业的3D可视化库（如 Mayavi, VisPy）以获得更好的性能和交互性。
-*   **单位和物理常数**: 明确物理量的单位，并在计算中引入相关物理常数。
+构建脚本在新的 `dist/SHGWorkbench-2.0.0-时间戳/` 目录生成 EXE、构建清单、依赖许可证及操作说明，不覆盖旧版本。EXE 内置 `--self-test 新目录` 测试入口，检查实际打包运行时中的联合拟合、解析式、项目回读及报告导出，仅使用模拟数据。
 
-## 贡献
+测试覆盖点群生成操作不变性、SHG 内禀对称性、旋转、Voigt 一致性、符号／数值一致、Fresnel 极限、已知谱峰积分、误差传播、共享参数恢复、不可辨识、取消、失败回滚与 GUI 操作。
 
-欢迎通过提交 Pull Request 或创建 Issues 来贡献代码或提出建议。
+## 源码位置
 
-## 许可证
+- `src/experimental_data.py`：输入与谱线处理。
+- `src/reflection_model.py`、`src/joint_fit.py`：反射模型与联合拟合。
+- `src/project_io.py`：项目校验及报告导出。
+- `src/ui/workbench.py`：中文工作台。
+- `src/point_groups.py`、`tools/generate_tensor_catalog.py`：共同张量定义及可重复推导。
 
-本项目采用 [MIT许可证](LICENSE) (如果计划添加LICENSE文件)。
+项目自身源码保留 [MIT 许可证](LICENSE)。组合 EXE 包含 GPLv3 版 PyQt5，按 GPLv3 条件分发；Qt 和其他依赖保留各自许可证。程序“帮助→版本与许可证”和便携包提供许可文本及对应源码来源；完整应用源码与构建方法随发布标签提供。[PyQt 官方许可说明](https://www.riverbankcomputing.com/software/pyqt/intro)
